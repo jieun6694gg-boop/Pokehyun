@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🍄 포켓볼 쿠지 사이트 🍄</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        :root {
+            --red: #e02424;
+            --red-dark: #b71c1c;
+            --red-light: #ff6b6b;
+            --bg: #ffffff;
+            --bg-soft: #fff5f5;
+            --border: #f3caca;
+            --shadow: #ffd6d6;
+            --text-dark: #2b2b2b;
+            --text-muted: #8a8a8a;
+            --gold: #e0a800;
+            --silver: #9a9a9a;
+            --bronze: #b06a34;
+            --reclaim: #b06a34;
+        }
+
+        body {
+            font-family: 'Jua', sans-serif, Arial;
+            background: linear-gradient(180deg, #ffffff, #fff5f5 40%, #ffecec);
+            background-attachment: fixed;
+            color: var(--text-dark);
+            text-align: center;
+            margin: 0;
+            padding: 15px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            color: var(--red);
+            margin-bottom: 5px;
+            font-size: 26px;
+            text-shadow: 1px 1px 0px #fff;
+        }
+        p { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+
+        /* 회원가입/로그인 카드 */
+        .auth-container {
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 25px 20px;
+            background-color: #ffffff;
+            border: 4px solid var(--red-light);
+            border-radius: 25px;
+            box-shadow: 0 8px 0px var(--shadow);
+        }
+
+        .auth-container h2 { color: var(--red); margin-top: 0; }
+
+        .input-group { margin-bottom: 12px; text-align: left; }
+
+        .input-group label { display: block; font-size: 13px; color: var(--red); margin-bottom: 5px; }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            background-color: var(--bg-soft);
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            color: var(--text-dark);
+            font-size: 14px;
+            font-family: 'Jua', sans-serif;
+            outline: none;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--red);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 0px var(--red-dark);
+        }
+
+        .auth-btn:active { transform: translateY(2px); box-shadow: 0 2px 0px var(--red-dark); }
+
+        .msg-box { font-size: 13px; color: var(--red); margin-top: 10px; min-height: 18px; }
+
+        .toggle-text { margin-top: 15px; font-size: 13px; color: var(--text-muted); }
+        .toggle-link { color: var(--red-dark); text-decoration: underline; cursor: pointer; }
+
+        .hidden { display: none !important; }
+
+        /* 상단 바 */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 380px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .coin-badge {
+            background-color: #fff;
+            border: 2px solid var(--red-light);
+            border-radius: 14px;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--red-dark);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-family: 'Jua', sans-serif;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 0px rgba(0,0,0,0.12);
+        }
+
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .back-btn { background-color: #555; }
+        .reset-btn { background-color: var(--red); }
+        .logout-btn { background-color: #444; font-size: 12px; padding: 6px 12px; }
+        .bag-btn { background-color: var(--red); font-size: 12px; padding: 6px 12px; }
+        .admin-btn { background-color: #222; font-size: 12px; padding: 6px 12px; }
+        .log-btn { background-color: #555; font-size: 12px; padding: 6px 10px; }
+        .grant-btn { background-color: var(--red); font-size: 12px; padding: 6px 10px; }
+        .reclaim-btn { background-color: var(--reclaim); font-size: 12px; padding: 6px 10px; }
+        .delete-btn { background-color: #222; font-size: 12px; padding: 6px 10px; }
+        .qty-btn { background-color: var(--red); font-size: 16px; padding: 6px 14px; }
+        .toggle-on-btn { background-color: #2bb673; font-size: 12px; padding: 6px 12px; }
+        .toggle-off-btn { background-color: #999; font-size: 12px; padding: 6px 12px; }
+        .filter-btn { background-color: #ddd; color: var(--text-dark); font-size: 12px; padding: 6px 10px; }
+        .filter-btn.active { background-color: var(--red); color: #fff; }
+
+        /* 홍보 배너 (A4 포스터 비율) */
+        .promo-banner {
+            max-width: 260px;
+            aspect-ratio: 1 / 1.4142;
+            margin: 15px auto;
+            background-color: #ffffff;
+            border: 4px solid var(--red-light);
+            border-radius: 14px;
+            box-shadow: 0 6px 0px var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .promo-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        .promo-slide.active { opacity: 1; }
+
+        .promo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #fff0f0, #ffd6d6);
+            color: var(--red-dark);
+            font-size: 13px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 확성기 */
+        .announce-bar {
+            max-width: 380px;
+            margin: 10px auto;
+            background: #fff5f5;
+            border: 2px solid var(--red-light);
+            border-radius: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--red-dark);
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 랭킹 */
+        .ranking-box {
+            max-width: 380px;
+            margin: 12px auto;
+            background: #fff;
+            border: 3px solid var(--red-light);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 5px 0px var(--shadow);
+        }
+
+        .ranking-title { color: var(--red); font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-rows: repeat(5, auto);
+            grid-auto-flow: column;
+            grid-auto-columns: 1fr;
+            gap: 4px 14px;
+        }
+
+        .ranking-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 3px 0;
+            text-align: left;
+        }
+
+        .rank-num { font-weight: bold; min-width: 26px; }
+        .rank-num.gold { color: var(--gold); }
+        .rank-num.silver { color: var(--silver); }
+        .rank-num.bronze { color: var(--bronze); }
+        .rank-num.normal { color: var(--text-dark); }
+
+        .rank-id { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dark); }
+        .rank-coin { color: var(--red-dark); font-size: 11px; }
+
+        /* 쿠지 목록 및 카드 */
+        .kuji-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            margin: 18px auto;
+        }
+
+        .kuji-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background-color: #ffffff;
+            border: 3px solid var(--red-light);
+            border-radius: 18px;
+            padding: 10px;
+            box-shadow: 0 5px 0px var(--shadow);
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.1s;
+        }
+
+        .kuji-row:active { transform: translateY(3px); box-shadow: 0 2px 0px var(--shadow); }
+
+        .img-fallback-box {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #ffd6d6, var(--red-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: bold;
+            color: #fff;
+            overflow: hidden;
+        }
+        .img-fallback-box img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .kuji-row-info { flex: 1; min-width: 0; }
+        .kuji-row-title { font-size: 16px; color: var(--red-dark); font-weight: bold; }
+        .kuji-row-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .kuji-row-meta { display: flex; gap: 10px; margin-top: 5px; }
+        .kuji-row-cost, .kuji-row-stock { font-size: 11px; color: var(--red-dark); font-weight: bold; }
+        .kuji-row-stock.low { color: #ff3d3d; }
+
+        /* 구매 바 */
+        .purchase-bar {
+            max-width: 380px;
+            margin: 12px auto;
+            background: #fff;
+            border: 3px solid var(--red-light);
+            border-radius: 18px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            box-shadow: 0 5px 0px var(--shadow);
+        }
+
+        .qty-display { font-size: 18px; font-weight: bold; color: var(--text-dark); min-width: 24px; }
+
+        /* 획득 가능 상품 미리보기 */
+        .prize-preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 380px;
+            margin: 12px auto;
+        }
+
+        .prize-preview-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .prize-preview-img {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            background: #fff0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--red-dark);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .prize-preview-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .prize-preview-info { flex: 1; }
+        .prize-preview-rank { font-size: 13px; font-weight: bold; color: var(--red-dark); }
+        .prize-preview-chance { font-size: 11px; color: var(--text-muted); }
+
+        /* 가방 */
+        .bag-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 380px;
+            margin: 14px auto;
+        }
+
+        .bag-card {
+            background: #fff;
+            border: 2px solid var(--red-light);
+            border-radius: 14px;
+            padding: 6px;
+            box-shadow: 0 3px 0px var(--shadow);
+        }
+
+        .bag-img {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            background: #fff0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--red-dark);
+            overflow: hidden;
+        }
+        .bag-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .bag-rank { font-size: 12px; font-weight: bold; margin-top: 4px; color: var(--red-dark); }
+
+        /* 뽑기 오버레이 */
+        .peel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(40, 20, 20, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .peel-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: #fff;
+            color: var(--red-dark);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .peel-progress { color: #fff; font-weight: bold; margin-bottom: 4px; }
+
+        .ticket-wrapper {
+            position: relative;
+            width: 260px;
+            height: 320px;
+            margin: 15px auto;
+            border-radius: 25px;
+            overflow: hidden;
+            border: 5px solid var(--red-light);
+            box-shadow: 0 8px 0px var(--shadow);
+            background: #ffffff;
+            touch-action: none;
+        }
+
+        .result-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 15px;
+            background-color: #fffafa;
+        }
+
+        .prize-img-wrap {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff0f0;
+            margin-bottom: 6px;
+        }
+        .prize-img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+        .prize-rank { font-size: 40px; color: var(--red-dark); margin-top: 6px; }
+        .prize-name { font-size: 16px; color: var(--text-dark); margin-top: 8px; }
+
+        .cover-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #ff8f8f, var(--red));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transform: translateY(0px);
+        }
+
+        .cover-layer.animating { transition: transform 0.3s ease-out; }
+
+        .btn-group { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+
+        /* 관리자 섹션 공용 */
+        .admin-section {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #ffffff;
+            border-radius: 18px;
+            border: 2px dashed var(--red);
+            max-width: 340px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        .admin-section h3 { color: var(--red); font-size: 14px; margin-top: 0; margin-bottom: 10px; text-align: center; }
+
+        .admin-user-row, .admin-board-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 8px 0;
+            border-bottom: 2px dashed var(--shadow);
+            flex-wrap: wrap;
+        }
+
+        .admin-user-row:last-child, .admin-board-row:last-child { border-bottom: none; }
+
+        .admin-user-id { font-size: 13px; font-weight: bold; color: var(--text-dark); }
+        .admin-user-coin { font-size: 11px; color: var(--red-dark); }
+        .admin-user-actions, .admin-board-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .admin-log-entry { font-size: 12px; color: var(--text-dark); padding: 5px 0; border-bottom: 1px dashed var(--shadow); }
+        .admin-log-summary { font-size: 12px; color: var(--red-dark); margin: 3px 0; }
+        .empty-note { font-size: 12px; color: var(--text-muted); text-align: center; padding: 8px 0; }
+
+        .promo-image-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .promo-image-row input { flex: 1; }
+
+        .blacklist-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fff0f0;
+            border: 1px solid var(--red-light);
+            border-radius: 12px;
+            padding: 3px 8px;
+            font-size: 12px;
+            margin: 3px 4px 0 0;
+        }
+        .blacklist-chip button {
+            border: none;
+            background: none;
+            color: var(--red-dark);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .grade-edit-row {
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #fffafa;
+        }
+        .grade-edit-row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .grade-edit-label { font-weight: bold; color: var(--red-dark); font-size: 13px; }
+        .grade-edit-row input { margin-bottom: 6px; }
+        .grade-edit-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        /* 경품 로그 */
+        .prize-log-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        .prize-log-left { font-size: 26px; font-weight: bold; color: var(--red-dark); min-width: 56px; text-align: center; }
+        .prize-log-right { flex: 1; }
+        .prize-log-user { font-size: 14px; font-weight: bold; color: var(--text-dark); }
+        .prize-log-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; justify-content: center; }
+
+        /* ===== [신규 추가] 교환신청 / 문의하기 채팅 ===== */
+        .chat-scroll {
+            max-width: 380px;
+            margin: 12px auto;
+            background: #fff;
+            border: 3px solid var(--red-light);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 5px 0px var(--shadow);
+            max-height: 400px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .chat-bubble-row { margin: 6px 0; }
+        .chat-bubble { display: inline-block; max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; word-break: break-word; }
+        .chat-bubble.user { background: var(--red); color: #fff; }
+        .chat-bubble.admin { background: #eee; color: #333; }
+        .chat-time { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .chat-input-row {
+            max-width: 380px;
+            margin: 12px auto;
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 14px;
+            border: 2px solid var(--border);
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+        .inquiry-badge-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 10px;
+            height: 10px;
+            background: #ff3d3d;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .exchange-action-btn { font-size: 10px; padding: 4px 8px; margin-top: 4px; width: 100%; box-sizing: border-box; }
+        .exchange-status-text { font-size: 10px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-view" class="auth-container">
+        <h2 id="auth-title">📝 회원가입</h2>
+
+        <div class="input-group">
+            <label>아이디 만들기</label>
+            <input type="text" id="auth-id" placeholder="사용할 아이디 입력">
+        </div>
+        <div class="input-group">
+            <label>비밀번호 만들기</label>
+            <input type="password" id="auth-pw" placeholder="사용할 비밀번호 입력">
+        </div>
+
+        <div class="msg-box" id="msg-box"></div>
+
+        <button class="auth-btn" id="auth-submit-btn" onclick="handleAuth()">가입하고 바로 시작하기</button>
+
+        <div class="toggle-text">
+            <span id="toggle-msg">이미 계정이 있으신가요?</span>
+            <span class="toggle-link" id="toggle-btn" onclick="toggleAuthMode()">로그인하기</span>
+        </div>
+    </div>
+
+    <div id="menu-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);" id="user-welcome">👤 환영합니다!</p>
+            <div class="topbar-right">
+                <span class="coin-badge">🪙 <span id="coin-count">0</span></span>
+                <button class="btn bag-btn" onclick="openBag()">🎒 가방</button>
+                <button class="btn bag-btn" style="position:relative;" onclick="openInquiry()">💬 문의하기<span id="inquiry-badge" class="inquiry-badge-dot hidden"></span></button>
+                <button class="btn admin-btn hidden" id="admin-entry-btn" onclick="openAdmin()">🛠️ 관리자</button>
+                <button class="btn logout-btn" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+
+        <h1>🍄 포켓볼 쿠지 사이트 🍄</h1>
+        <p>뽑고 싶은 쿠지를 톡 터치해보세요!</p>
+
+        <div class="promo-banner" id="promo-banner"></div>
+
+        <div class="announce-bar" id="announce-bar">아직 등록된 소식이 없습니다.</div>
+
+        <div class="ranking-box">
+            <div class="ranking-title">🏆 코인 사용 랭킹</div>
+            <div class="ranking-grid" id="ranking-grid"></div>
+        </div>
+
+        <div class="kuji-list" id="kuji-list"></div>
+    </div>
+
+    <div id="board-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🎫 쿠지판</p>
+            <div class="topbar-right">
+                <span class="coin-badge">🪙 <span id="coin-count-board">0</span></span>
+            </div>
+        </div>
+
+        <h1 id="board-title">쿠지 이름</h1>
+        <p id="board-stock">재고: 50/50</p>
+
+        <div class="purchase-bar">
+            <span>구매 수량</span>
+            <button class="btn qty-btn" onclick="changeQty(-1)">－</button>
+            <span class="qty-display" id="qty-display">1</span>
+            <button class="btn qty-btn" onclick="changeQty(1)">＋</button>
+            <button class="auth-btn" style="width:auto; margin-top:0;" onclick="purchaseDraws()">구매하기 (<span id="purchase-cost">0</span>코인)</button>
+        </div>
+
+        <div class="msg-box" id="board-msg"></div>
+
+        <p style="font-weight:bold; color:var(--red-dark);">🎁 획득 가능한 상품</p>
+        <div class="prize-preview-list" id="prize-preview-list"></div>
+
+        <div class="btn-group">
+            <button class="btn back-btn" onclick="goBackFromBoard()">⬅️ 목록으로</button>
+        </div>
+    </div>
+
+    <div id="bag-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🎒 내 가방</p>
+            <button class="btn back-btn" onclick="showView('menu-view')">⬅️ 나가기</button>
+        </div>
+        <h1>내가 뽑은 쿠지</h1>
+        <div class="bag-grid" id="bag-grid"></div>
+    </div>
+
+    <div id="inquiry-view" class="hidden">
+        <div class="topbar">
+            <button class="btn back-btn" onclick="goBackFromInquiry()">⬅️ 뒤로가기</button>
+            <p style="margin:0; font-weight:bold; color:var(--red);">💬 문의하기</p>
+            <div class="topbar-right">
+                <button class="btn reset-btn" onclick="closeInquiryByUser()">문의 닫기</button>
+            </div>
+        </div>
+        <p>궁금한 점을 남겨주시면 관리자가 답변해드려요.</p>
+        <div class="chat-scroll" id="inquiry-messages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="inquiry-input" placeholder="문의 내용을 입력하세요" onkeydown="if(event.key==='Enter'){sendInquiryMessage();}">
+            <button class="btn qty-btn" onclick="sendInquiryMessage()">전송</button>
+        </div>
+    </div>
+
+    <div id="peel-overlay" class="peel-overlay hidden">
+        <button class="peel-close" onclick="closePeelOverlay()">✕</button>
+        <div class="peel-progress" id="peel-progress">1 / 1</div>
+        <h1 id="peel-title" style="color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,0.2);">쿠지 뽑기</h1>
+        <p style="color:#fff;">손가락으로 위로 쓱 올려서 뜯으세요!</p>
+
+        <div class="ticket-wrapper">
+            <div class="result-layer">
+                <div class="prize-img-wrap hidden" id="p-image-wrap"></div>
+                <div class="prize-rank" id="p-rank">?상</div>
+                <div class="prize-name" id="p-name">상품명</div>
+            </div>
+
+            <div class="cover-layer" id="cover-layer">
+                <p style="font-size: 14px; font-weight: bold; background: rgba(255,255,255,0.4); color:#5a1414; padding: 6px 14px; border-radius: 20px;">👆 위로 쓱 끌어올리기</p>
+            </div>
+        </div>
+
+        <button class="btn reset-btn hidden" id="peel-confirm-btn" onclick="confirmPeelStep()">확인</button>
+    </div>
+
+    <div id="custom-modal-overlay" class="peel-overlay hidden" style="z-index:1000;">
+        <div style="background:#fff; border-radius:20px; padding:20px; max-width:300px; width:100%; text-align:left; box-sizing:border-box;">
+            <h3 id="custom-modal-title" style="color:var(--red); margin:0 0 8px;">알림</h3>
+            <p id="custom-modal-desc" style="font-size:13px; color:var(--text-dark); white-space:pre-line; margin:0 0 10px;"></p>
+            <div class="input-group hidden" id="custom-modal-input-group" style="margin-bottom:6px;">
+                <input type="number" id="custom-modal-input" placeholder="숫자 입력">
+            </div>
+            <div class="msg-box" id="custom-modal-error" style="margin-top:0;"></div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn back-btn" style="flex:1;" onclick="closeCustomModal()">취소</button>
+                <button class="btn reset-btn" style="flex:1;" onclick="submitCustomModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🛠️ 관리자 패널</p>
+            <button class="btn back-btn" onclick="showView('menu-view'); renderMenu();">⬅️ 나가기</button>
+        </div>
+        <h1>관리자 메뉴</h1>
+        <div class="kuji-list">
+            <div class="kuji-row" onclick="openAdminPromo()">
+                <div class="img-fallback-box"><span>🖼️</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">홍보 배너 관리</div>
+                    <div class="kuji-row-desc">메인 화면 포스터 배너 1~10장 관리</div>
+                </div>
+            </div>
+            <div class="kuji-row" onclick="openAdminUsers()">
+                <div class="img-fallback-box"><span>👥</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">유저 관리</div>
+                    <div class="kuji-row-desc">검색, 코인 지급/회수, 삭제, 로그 확인</div>
+                </div>
+            </div>
+            <div class="kuji-row" onclick="openAdminPrizeLog()">
+                <div class="img-fallback-box"><span>📜</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">경품 로그</div>
+                    <div class="kuji-row-desc">전체 유저의 뽑기 기록, 등급별 조회</div>
+                </div>
+            </div>
+            <div class="kuji-row" onclick="openAdminBoardsGate()">
+                <div class="img-fallback-box"><span>🔒</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">쿠지판 관리</div>
+                    <div class="kuji-row-desc">확률·재고·블랙리스트 등 (보안 확인 필요)</div>
+                </div>
+            </div>
+            <div class="kuji-row" onclick="openAdminExchange()">
+                <div class="img-fallback-box"><span>🔄</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">환전/교환 신청</div>
+                    <div class="kuji-row-desc">이용자 교환 신청 목록 확인 및 완료·거절 처리</div>
+                </div>
+            </div>
+            <div class="kuji-row" onclick="openAdminInquiry()">
+                <div class="img-fallback-box"><span>💬</span></div>
+                <div class="kuji-row-info">
+                    <div class="kuji-row-title">문의사항</div>
+                    <div class="kuji-row-desc">이용자 문의 확인 및 실시간 1:1 답변</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-promo-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🖼️ 홍보 배너 관리</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="admin-section">
+            <h3>배너 이미지 (최대 10장, A4 세로 비율)</h3>
+            <p style="font-size:11px; margin:0 0 8px;">사진을 2장 이상 등록하면 메인 화면에서 5초마다 자동으로 넘어갑니다.</p>
+            <div id="promo-image-fields"></div>
+            <button class="btn qty-btn" onclick="addPromoImageField()">+ 이미지 추가</button>
+            <button class="auth-btn" onclick="savePromoImages()">저장하기</button>
+            <div class="msg-box" id="promo-msg"></div>
+        </div>
+    </div>
+
+    <div id="admin-users-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">👥 유저 관리</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="admin-section">
+            <div class="input-group">
+                <label>아이디 검색</label>
+                <input type="text" id="user-search-input" placeholder="아이디 입력 (비우면 전체 표시)" oninput="renderUserList(this.value)">
+            </div>
+            <div id="admin-user-list"></div>
+        </div>
+        <div class="admin-section hidden" id="user-log-box">
+            <h3 id="user-log-title">📜 유저 로그</h3>
+            <div id="user-log-content"></div>
+            <button class="btn back-btn" style="margin-top:10px;" onclick="document.getElementById('user-log-box').classList.add('hidden')">닫기</button>
+        </div>
+    </div>
+
+    <div id="admin-prizelog-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">📜 경품 로그</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="filter-row" id="prizelog-filter-row"></div>
+        <div id="prize-log-list" style="max-width:380px; margin:0 auto;"></div>
+    </div>
+
+    <div id="admin-boards-gate" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🔒 보안 확인</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="admin-section">
+            <h3>관리자 정보를 다시 입력해주세요</h3>
+            <div class="input-group"><label>관리자 아이디</label><input type="text" id="gate-id" placeholder="관리자 아이디"></div>
+            <div class="input-group"><label>비밀번호</label><input type="password" id="gate-pw" placeholder="비밀번호"></div>
+            <button class="auth-btn" onclick="verifyBoardsGate()">확인</button>
+            <div class="msg-box" id="gate-msg"></div>
+        </div>
+    </div>
+
+    <div id="admin-boards-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🎫 쿠지판 관리</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <h1>쿠지판 목록</h1>
+        <p>편집할 쿠지판을 선택하세요.</p>
+        <div class="kuji-list" id="admin-boards-list"></div>
+    </div>
+
+    <div id="board-edit-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">✏️ 쿠지판 편집</p>
+            <button class="btn back-btn" onclick="showView('admin-boards-view'); renderAdminBoardsList();">⬅️ 뒤로</button>
+        </div>
+        <div class="admin-section" id="board-edit-form"></div>
+    </div>
+
+    <div id="admin-exchange-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">🔄 환전/교환 신청</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="filter-row" id="exchange-filter-row"></div>
+        <div id="exchange-list" style="max-width:380px; margin:0 auto;"></div>
+    </div>
+
+    <div id="admin-inquiry-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);">💬 문의사항</p>
+            <button class="btn back-btn" onclick="showView('admin-view')">⬅️ 뒤로</button>
+        </div>
+        <div class="filter-row" id="inquiry-filter-row"></div>
+        <div id="admin-inquiry-list" style="max-width:380px; margin:0 auto;"></div>
+    </div>
+
+    <div id="admin-inquiry-chat-view" class="hidden">
+        <div class="topbar">
+            <p style="margin:0; font-weight:bold; color:var(--red);" id="admin-inquiry-chat-title">💬 대화</p>
+            <div class="topbar-right">
+                <button class="btn reset-btn" onclick="closeInquiryByAdmin()">문의 닫기</button>
+                <button class="btn back-btn" onclick="showView('admin-inquiry-view'); renderAdminInquiryList();">⬅️ 목록으로</button>
+            </div>
+        </div>
+        <div class="chat-scroll" id="admin-inquiry-messages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="admin-inquiry-input" placeholder="답변을 입력하세요" onkeydown="if(event.key==='Enter'){sendAdminInquiryMessage();}">
+            <button class="btn qty-btn" onclick="sendAdminInquiryMessage()">전송</button>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_IDS = ["박동범"];
+        const START_COINS = 0;
+
+        const BOARD_SEED = [
+            { id: "pikachu", title: "피카츄 대모험", desc: "짜릿한 전기 쇼크! 피카츄 인기 굿즈 모음", image: "", cost: 100 },
+            { id: "legend", title: "전설의 포켓몬", desc: "만나기 힘든 전설의 포켓몬 굿즈를 노려보세요", image: "", cost: 150 },
+            { id: "starter", title: "스타팅 포켓몬", desc: "포켓몬 여행의 시작, 스타팅 굿즈 세트", image: "", cost: 100 },
+            { id: "eevee", title: "이브이 프렌즈", desc: "사랑스러운 이브이와 진화체 굿즈 모음", image: "", cost: 80 },
+            { id: "birds", title: "전설의 새", desc: "하늘을 지배하는 전설의 새 3형제 굿즈", image: "", cost: 200 }
+        ];
+        const BOARD_ID_ORDER = BOARD_SEED.map(b => b.id);
+
+        function makeGradeId() {
+            return "g_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+        }
+
+        function defaultGrades() {
+            return [
+                { id: makeGradeId(), rank: "A", name: "프리미엄 피규어", image: "", chance: 5, maxCount: 2, soldCount: 0 },
+                { id: makeGradeId(), rank: "B", name: "대형 인형", image: "", chance: 10, maxCount: 5, soldCount: 0 },
+                { id: makeGradeId(), rank: "C", name: "극세사 담요", image: "", chance: 20, maxCount: 10, soldCount: 0 },
+                { id: makeGradeId(), rank: "D", name: "머그컵", image: "", chance: 30, maxCount: 15, soldCount: 0 },
+                { id: makeGradeId(), rank: "E", name: "스티커", image: "", chance: 35, maxCount: 0, soldCount: 0 }
+            ];
+        }
+
+        let memoryUsers = {};
+        let memoryLogs = [];
+        let memoryBoards = {};
+        let memoryPromo = { images: [] };
+        let memoryExchanges = []; // [신규 추가] 교환신청 목록 메모리 저장소
+        let memoryInquiries = []; // [신규 추가] 문의 채팅 목록 메모리 저장소
+        let currentUserId = null;
+        let isSignUpMode = true;
+        let promoInterval = null;
+        let promoIndex = 0;
+
+        const ALL_VIEWS = [
+            "auth-view", "menu-view", "board-view", "bag-view",
+            "admin-view", "admin-promo-view", "admin-users-view",
+            "admin-prizelog-view", "admin-boards-gate", "admin-boards-view", "board-edit-view",
+            "inquiry-view", "admin-exchange-view", "admin-inquiry-view", "admin-inquiry-chat-view"
+        ];
+
+        function showView(id) {
+            ALL_VIEWS.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
+        }
+
+        function imgWithFallback(url, alt, fallbackText) {
+            const safeFallback = (fallbackText || "?").toString().slice(0, 2);
+            const img = url ? `<img src="${url}" alt="${alt || ""}" onerror="this.remove()">` : "";
+            return `<span>${safeFallback}</span>${img}`;
+        }
+
+        function showMsg(text, isError = true) {
+            const msgBox = document.getElementById("msg-box");
+            msgBox.style.color = isError ? "#e02424" : "#2bb673";
+            msgBox.innerText = text;
+        }
+
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            showMsg("");
+            const title = document.getElementById("auth-title");
+            const btn = document.getElementById("auth-submit-btn");
+            const msg = document.getElementById("toggle-msg");
+            const toggleBtn = document.getElementById("toggle-btn");
+
+            if (isSignUpMode) {
+                title.innerText = "📝 회원가입";
+                btn.innerText = "가입하고 바로 시작하기";
+                msg.innerText = "이미 계정이 있으신가요?";
+                toggleBtn.innerText = "로그인하기";
+            } else {
+                title.innerText = "🔑 로그인";
+                btn.innerText = "로그인하기";
+                msg.innerText = "계정이 없으신가요?";
+                toggleBtn.innerText = "회원가입하기";
+            }
+        }
+
+        function getUsers() {
+            try {
+                const stored = localStorage.getItem("kuji_users");
+                return stored ? JSON.parse(stored) : memoryUsers;
+            } catch (e) { return memoryUsers; }
+        }
+        function saveUsers(users) {
+            memoryUsers = users;
+            try { localStorage.setItem("kuji_users", JSON.stringify(users)); } catch (e) {}
+        }
+
+        function handleAuth() {
+            const id = document.getElementById("auth-id").value.trim();
+            const pw = document.getElementById("auth-pw").value.trim();
+
+            if (!id || !pw) { showMsg("아이디와 비밀번호를 모두 입력해주세요!"); return; }
+
+            let users = getUsers();
+
+            if (isSignUpMode) {
+                if (users[id]) { showMsg("이미 존재하는 아이디입니다!"); return; }
+                users[id] = { pw: pw, coins: START_COINS, spent: 0 };
+                saveUsers(users);
+                enterApp(id);
+            } else {
+                if (users[id] && users[id].pw === pw) {
+                    enterApp(id);
+                } else {
+                    showMsg("아이디 또는 비밀번호가 맞지 않습니다!");
+                }
+            }
+        }
+
+        function enterApp(userId) {
+            showMsg("");
+            currentUserId = userId;
+            document.getElementById("user-welcome").innerText = `👤 ${userId}님`;
+            document.getElementById("admin-entry-btn").classList.toggle("hidden", !ADMIN_IDS.includes(userId));
+
+            ensureAllBoards();
+            updateCoinDisplay();
+            showView("menu-view");
+            renderMenu();
+            startPromoCarousel();
+            startInquiryWatcher(); // [신규 추가] 문의 채팅 실시간 감시 시작
+        }
+
+        function logout() {
+            document.getElementById("auth-id").value = "";
+            document.getElementById("auth-pw").value = "";
+            currentUserId = null;
+            stopPromoCarousel();
+            stopInquiryWatcher(); // [신규 추가] 문의 채팅 실시간 감시 종료
+            currentAdminInquiryId = null;
+            document.getElementById("peel-overlay").classList.add("hidden");
+            showView("auth-view");
+        }
+
+        function updateCoinDisplay() {
+            const users = getUsers();
+            const coins = (currentUserId && users[currentUserId]) ? users[currentUserId].coins : 0;
+            document.getElementById("coin-count").innerText = coins;
+            document.getElementById("coin-count-board").innerText = coins;
+        }
+
+        function getPromo() {
+            try {
+                const stored = localStorage.getItem("kuji_promo");
+                return stored ? JSON.parse(stored) : memoryPromo;
+            } catch (e) { return memoryPromo; }
+        }
+        function savePromoData(promo) {
+            memoryPromo = promo;
+            try { localStorage.setItem("kuji_promo", JSON.stringify(promo)); } catch (e) {}
+        }
+
+        function renderPromoBanner() {
+            const promo = getPromo();
+            const images = (promo.images || []).filter(x => x);
+            const banner = document.getElementById("promo-banner");
+            if (images.length === 0) {
+                banner.innerHTML = `<div class="promo-placeholder">✨ 관리자 패널에서 홍보 배너 사진을 등록해보세요! ✨</div>`;
+                return;
+            }
+            if (promoIndex >= images.length) promoIndex = 0;
+            banner.innerHTML = images.map((url, idx) =>
+                `<img class="promo-slide ${idx === promoIndex ? "active" : ""}" src="${url}" alt="홍보 배너 ${idx + 1}" onerror="this.style.display='none'">`
+            ).join("");
+        }
+
+        function startPromoCarousel() {
+            stopPromoCarousel();
+            promoIndex = 0;
+            renderPromoBanner();
+            promoInterval = setInterval(() => {
+                const promo = getPromo();
+                const images = (promo.images || []).filter(x => x);
+                if (images.length <= 1) { promoIndex = 0; return; }
+
+                promoIndex = (promoIndex + 1) % images.length;
+
+                const banner = document.getElementById("promo-banner");
+                const slides = banner ? banner.querySelectorAll(".promo-slide") : [];
+                if (slides.length !== images.length) {
+                    renderPromoBanner();
+                    return;
+                }
+                slides.forEach((el, idx) => el.classList.toggle("active", idx === promoIndex));
+            }, 5000);
+        }
+        function stopPromoCarousel() {
+            if (promoInterval) { clearInterval(promoInterval); promoInterval = null; }
+        }
+
+        function getBoards() {
+            try {
+                const stored = localStorage.getItem("kuji_boards");
+                return stored ? JSON.parse(stored) : memoryBoards;
+            } catch (e) { return memoryBoards; }
+        }
+        function saveBoards(boards) {
+            memoryBoards = boards;
+            try { localStorage.setItem("kuji_boards", JSON.stringify(boards)); } catch (e) {}
+        }
+
+        /* ============================================================
+           [수정됨] normalizeBoard: 쿠지판 데이터에 필요한 필드가
+           하나라도 빠져있거나 형식이 깨져 있으면(예전 버전 데이터 등)
+           기본값으로 채워서 항상 온전한 형태로 만들어줍니다.
+           => 이 함수가 없으면 편집 화면에서 draftBoard.grades.reduce 등을
+              호출할 때 오류가 나서 "쿠지판 편집" 화면이 빈 화면으로
+              보이는 문제가 발생했습니다.
+        ============================================================ */
+        function normalizeBoard(seed, board) {
+            const b = (board && typeof board === "object") ? board : {};
+            const grades = Array.isArray(b.grades) && b.grades.length > 0
+                ? b.grades.map(g => ({
+                    id: (g && g.id) ? g.id : makeGradeId(),
+                    rank: (g && typeof g.rank === "string") ? g.rank : "",
+                    name: (g && typeof g.name === "string") ? g.name : "",
+                    image: (g && typeof g.image === "string") ? g.image : "",
+                    chance: (g && typeof g.chance === "number" && !isNaN(g.chance)) ? g.chance : 0,
+                    maxCount: (g && typeof g.maxCount === "number" && !isNaN(g.maxCount)) ? g.maxCount : 0,
+                    soldCount: (g && typeof g.soldCount === "number" && !isNaN(g.soldCount)) ? g.soldCount : 0
+                }))
+                : defaultGrades();
+
+            return {
+                title: (typeof b.title === "string" && b.title) ? b.title : seed.title,
+                desc: (typeof b.desc === "string") ? b.desc : seed.desc,
+                image: (typeof b.image === "string") ? b.image : (seed.image || ""),
+                cost: (typeof b.cost === "number" && !isNaN(b.cost)) ? b.cost : seed.cost,
+                totalStock: (typeof b.totalStock === "number" && !isNaN(b.totalStock)) ? b.totalStock : 50,
+                soldCount: (typeof b.soldCount === "number" && !isNaN(b.soldCount)) ? b.soldCount : 0,
+                rigOn: (typeof b.rigOn === "boolean") ? b.rigOn : true,
+                rigThreshold: (typeof b.rigThreshold === "number" && !isNaN(b.rigThreshold)) ? b.rigThreshold : 25,
+                blacklist: Array.isArray(b.blacklist) ? b.blacklist.filter(x => typeof x === "string") : [],
+                grades: grades
+            };
+        }
+
+        function ensureAllBoards() {
+            const boards = getBoards();
+            let changed = false;
+            BOARD_SEED.forEach(seed => {
+                const normalized = normalizeBoard(seed, boards[seed.id]);
+                if (!boards[seed.id] || JSON.stringify(boards[seed.id]) !== JSON.stringify(normalized)) {
+                    boards[seed.id] = normalized;
+                    changed = true;
+                }
+            });
+            if (changed) saveBoards(boards);
+        }
+
+        function getLogs() {
+            try {
+                const stored = localStorage.getItem("kuji_logs");
+                const parsed = stored ? JSON.parse(stored) : memoryLogs;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return Array.isArray(memoryLogs) ? memoryLogs : []; }
+        }
+        function saveLogs(logs) {
+            memoryLogs = logs;
+            try { localStorage.setItem("kuji_logs", JSON.stringify(logs)); } catch (e) {}
+        }
+        function addLog(entry) {
+            const logs = getLogs();
+            logs.push(entry);
+            saveLogs(logs);
+        }
+
+        function formatTime(iso) {
+            const t = new Date(iso);
+            return `${t.getMonth() + 1}월 ${t.getDate()}일 ${String(t.getHours()).padStart(2, "0")}시 ${String(t.getMinutes()).padStart(2, "0")}분 ${String(t.getSeconds()).padStart(2, "0")}초`;
+        }
+
+        function updateAnnouncement() {
+            const logs = getLogs();
+            const recent = logs
+                .filter(l => (typeof l.gradeIndex === "number") ? l.gradeIndex < 3 : ["A", "B", "C"].includes(l.rank))
+                .sort((a, b) => new Date(b.time) - new Date(a.time))[0];
+            const bar = document.getElementById("announce-bar");
+            if (!bar) return;
+            if (!recent) {
+                bar.innerText = "📢 아직 등록된 소식이 없습니다.";
+            } else {
+                bar.innerText = `📢 ${recent.userId}님이 ${recent.kujiTitle}에서 ${recent.rank}상을 뽑았습니다!`;
+            }
+        }
+
+        function renderRanking() {
+            const grid = document.getElementById("ranking-grid");
+            if (!grid) return;
+            const users = getUsers();
+            const arr = Object.keys(users).map(id => ({ id, spent: users[id].spent || 0 })).sort((a, b) => b.spent - a.spent).slice(0, 10);
+
+            let html = "";
+            for (let i = 0; i < 10; i++) {
+                const entry = arr[i];
+                const rankNum = i + 1;
+                const colorClass = rankNum === 1 ? "gold" : rankNum === 2 ? "silver" : rankNum === 3 ? "bronze" : "normal";
+                html += entry
+                    ? `<div class="ranking-row"><span class="rank-num ${colorClass}">${rankNum}등</span><span class="rank-id">${entry.id}</span><span class="rank-coin">${entry.spent}코인</span></div>`
+                    : `<div class="ranking-row"><span class="rank-num ${colorClass}">${rankNum}등</span><span class="rank-id" style="color:#ccc;">-</span></div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function getStock(board) { return board.totalStock - board.soldCount; }
+
+        function renderMenu() {
+            ensureAllBoards();
+
+            try { renderPromoBanner(); } catch (e) { console.error("promo render error", e); }
+            try { updateAnnouncement(); } catch (e) { console.error("announce render error", e); }
+            try { renderRanking(); } catch (e) { console.error("ranking render error", e); }
+            try { updateInquiryBadge(); } catch (e) { console.error("inquiry badge render error", e); }
+
+            const list = document.getElementById("kuji-list");
+            if (!list) return;
+            list.innerHTML = "";
+
+            try {
+                const boards = getBoards();
+                BOARD_ID_ORDER.forEach(id => {
+                    const board = boards[id];
+                    if (!board) return;
+                    const stock = getStock(board);
+                    const row = document.createElement("div");
+                    row.className = "kuji-row";
+                    row.onclick = () => openKuji(id);
+
+                    const fallback = (board.title || "?").slice(0, 1);
+
+                    row.innerHTML = `
+                        <div class="img-fallback-box">${imgWithFallback(board.image, board.title, fallback)}</div>
+                        <div class="kuji-row-info">
+                            <div class="kuji-row-title">${board.title} 뽑기</div>
+                            <div class="kuji-row-desc">${board.desc}</div>
+                            <div class="kuji-row-meta">
+                                <span class="kuji-row-cost">1회 ${board.cost}코인</span>
+                                <span class="kuji-row-stock ${stock <= 10 ? "low" : ""}">재고 ${stock}/${board.totalStock}</span>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                console.error("kuji list render error", e);
+            }
+        }
+
+        let currentBoardId = null;
+        let qty = 1;
+        let pendingDraws = 0;
+        let pendingTotal = 0;
+        let pendingDone = 0;
+
+        function openKuji(id) {
+            currentBoardId = id;
+            qty = 1;
+            showBoardMsg("");
+            goToViewSafely("board-view", () => {
+                updateCoinDisplay();
+                refreshBoardUI();
+            });
+        }
+
+        function goBackFromBoard() {
+            showView("menu-view");
+            renderMenu();
+        }
+
+        function refreshBoardUI() {
+            const boards = getBoards();
+            const board = boards[currentBoardId];
+            if (!board) return;
+
+            document.getElementById("board-title").innerText = board.title + " 뽑기";
+            const stock = getStock(board);
+            document.getElementById("board-stock").innerText = `재고: ${stock}/${board.totalStock}`;
+
+            if (qty > Math.max(stock, 1)) qty = Math.max(stock, 1);
+            if (qty < 1) qty = 1;
+            document.getElementById("qty-display").innerText = qty;
+            document.getElementById("purchase-cost").innerText = qty * board.cost;
+
+            const list = document.getElementById("prize-preview-list");
+            list.innerHTML = "";
+            (board.grades || []).forEach(g => {
+                const row = document.createElement("div");
+                row.className = "prize-preview-row";
+                row.innerHTML = `
+                    <div class="prize-preview-img">${imgWithFallback(g.image, g.rank + "상", g.rank)}</div>
+                    <div class="prize-preview-info">
+                        <div class="prize-preview-rank">${g.rank}상 - ${g.name || "미정"}</div>
+                        <div class="prize-preview-chance">확률 ${g.chance}%</div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function changeQty(delta) {
+            const boards = getBoards();
+            const board = boards[currentBoardId];
+            const stock = getStock(board);
+            const maxQty = Math.max(stock, 1);
+            qty = Math.min(Math.max(1, qty + delta), maxQty);
+            refreshBoardUI();
+        }
+
+        function showBoardMsg(text, isError = true) {
+            const box = document.getElementById("board-msg");
+            box.style.color = isError ? "#e02424" : "#2bb673";
+            box.innerText = text;
+        }
+
+        function purchaseDraws() {
+            const boards = getBoards();
+            const board = boards[currentBoardId];
+            if (!board.grades || board.grades.length === 0) { showBoardMsg("관리자가 아직 등급을 설정하지 않았습니다!"); return; }
+
+            const stock = getStock(board);
+            if (stock <= 0) { showBoardMsg("품절된 쿠지판입니다!"); return; }
+            if (qty > stock) { showBoardMsg("남은 재고보다 많이 구매할 수 없습니다!"); return; }
+
+            const cost = qty * board.cost;
+            const users = getUsers();
+            const u = users[currentUserId];
+            if (!u || u.coins < cost) { showBoardMsg("🪙 코인이 부족합니다!"); return; }
+
+            u.coins -= cost;
+            u.spent = (u.spent || 0) + cost;
+            saveUsers(users);
+            updateCoinDisplay();
+            renderRanking();
+
+            pendingTotal = qty;
+            pendingDone = 0;
+            pendingDraws = qty;
+            showBoardMsg("");
+            openPeelForNext();
+        }
+
+        const cover = document.getElementById("cover-layer");
+        let startY = 0, currentY = 0, isDragging = false, isOpened = false;
+
+        function openPeelForNext() {
+            resetPeelUI();
+            document.getElementById("peel-progress").innerText = `${pendingDone + 1} / ${pendingTotal}`;
+            const boards = getBoards();
+            document.getElementById("peel-title").innerText = boards[currentBoardId].title;
+            document.getElementById("peel-overlay").classList.remove("hidden");
+        }
+
+        function resetPeelUI() {
+            isOpened = false;
+            currentY = 0;
+            cover.classList.add("animating");
+            cover.style.transform = "translateY(0px)";
+            document.getElementById("peel-confirm-btn").classList.add("hidden");
+            document.getElementById("p-rank").innerText = "?상";
+            document.getElementById("p-name").innerText = "";
+            document.getElementById("p-image-wrap").classList.add("hidden");
+            document.getElementById("p-image-wrap").innerHTML = "";
+        }
+
+        function closePeelOverlay() {
+            document.getElementById("peel-overlay").classList.add("hidden");
+            refreshBoardUI();
+        }
+
+        function handleStart(e) {
+            if (isOpened) return;
+            isDragging = true;
+            cover.classList.remove("animating");
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+        }
+        function handleMove(e) {
+            if (!isDragging || isOpened) return;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const deltaY = clientY - startY;
+            if (deltaY < 0) {
+                currentY = deltaY;
+                cover.style.transform = `translateY(${currentY}px)`;
+            }
+        }
+        function handleEnd() {
+            if (!isDragging || isOpened) return;
+            isDragging = false;
+            cover.classList.add("animating");
+
+            if (currentY < -100) {
+                isOpened = true;
+                cover.style.transform = "translateY(-100%)";
+                revealCurrentDraw();
+                document.getElementById("peel-confirm-btn").classList.remove("hidden");
+            } else {
+                currentY = 0;
+                cover.style.transform = "translateY(0px)";
+            }
+        }
+
+        cover.addEventListener("touchstart", handleStart);
+        cover.addEventListener("touchmove", handleMove);
+        cover.addEventListener("touchend", handleEnd);
+        cover.addEventListener("mousedown", handleStart);
+        window.addEventListener("mousemove", handleMove);
+        window.addEventListener("mouseup", handleEnd);
+
+        function pickGrade(board, userId) {
+            const grades = board.grades || [];
+            if (grades.length === 0) return null;
+
+            const blacklisted = (board.blacklist || []).includes(userId);
+
+            let pool = grades.filter((g, idx) => {
+                if (idx === 0) {
+                    if (blacklisted) return false;
+                    if (board.rigOn && (board.soldCount || 0) < board.rigThreshold) return false;
+                }
+                if (g.maxCount && (g.soldCount || 0) >= g.maxCount) return false;
+                return true;
+            });
+
+            if (pool.length === 0) {
+                pool = grades.filter(g => !(g.maxCount && (g.soldCount || 0) >= g.maxCount));
+            }
+            if (pool.length === 0) pool = [grades[grades.length - 1]];
+
+            const totalWeight = pool.reduce((s, g) => s + (Number(g.chance) || 0), 0);
+            if (totalWeight <= 0) return pool[pool.length - 1];
+
+            let r = Math.random() * totalWeight;
+            for (const g of pool) {
+                r -= (Number(g.chance) || 0);
+                if (r <= 0) return g;
+            }
+            return pool[pool.length - 1];
+        }
+
+        function revealCurrentDraw() {
+            const boards = getBoards();
+            const board = boards[currentBoardId];
+
+            const picked = pickGrade(board, currentUserId);
+            if (!picked) {
+                document.getElementById("p-rank").innerText = "?";
+                document.getElementById("p-name").innerText = "설정된 상품이 없습니다";
+                pendingDone += 1;
+                pendingDraws -= 1;
+                document.getElementById("peel-confirm-btn").innerText = pendingDraws > 0 ? "다음 쿠지 뜯기 ▶" : "확인";
+                return;
+            }
+
+            const target = board.grades.find(g => g.id === picked.id);
+            target.soldCount = (target.soldCount || 0) + 1;
+            board.soldCount = (board.soldCount || 0) + 1;
+            saveBoards(boards);
+
+            const gradeIndex = board.grades.findIndex(g => g.id === picked.id);
+
+            document.getElementById("p-rank").innerText = target.rank + "상";
+            document.getElementById("p-name").innerText = target.name || "";
+            const imgWrap = document.getElementById("p-image-wrap");
+            if (target.image) {
+                imgWrap.innerHTML = `<img src="${target.image}" alt="${target.rank}상" onerror="this.parentNode.classList.add('hidden')">`;
+                imgWrap.classList.remove("hidden");
+            } else {
+                imgWrap.classList.add("hidden");
+                imgWrap.innerHTML = "";
+            }
+
+            const entry = {
+                id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+                userId: currentUserId,
+                boardId: currentBoardId,
+                kujiTitle: board.title,
+                rank: target.rank,
+                gradeId: target.id,
+                gradeIndex: gradeIndex,
+                prizeName: target.name || "",
+                time: new Date().toISOString()
+            };
+            addLog(entry);
+
+            updateAnnouncement();
+            renderRanking();
+
+            pendingDone += 1;
+            pendingDraws -= 1;
+
+            document.getElementById("peel-confirm-btn").innerText = pendingDraws > 0 ? "다음 쿠지 뜯기 ▶" : "확인하고 가방에 담기";
+        }
+
+        function confirmPeelStep() {
+            if (pendingDraws > 0) {
+                openPeelForNext();
+            } else {
+                document.getElementById("peel-overlay").classList.add("hidden");
+                refreshBoardUI();
+                showBoardMsg("🎒 구매한 쿠지가 모두 가방에 담겼습니다!", false);
+            }
+        }
+
+        function openBag() {
+            goToViewSafely("bag-view", renderBag);
+        }
+
+        function renderBag() {
+            const exchanges = getExchanges(); // [신규 추가]
+            const logs = getLogs()
+                .filter(l => l.userId === currentUserId)
+                /* [신규 추가] 관리자가 지급완료(done) 처리하고, 이용자가 삭제 버튼을 눌러
+                   가방에서 제거하기로 한(removed) 항목은 가방 목록에서 숨깁니다. */
+                .filter(l => {
+                    const ex = exchanges.find(e => e.logId === l.id);
+                    return !(ex && ex.status === "done" && ex.removed);
+                })
+                .sort((a, b) => new Date(b.time) - new Date(a.time));
+            const boards = getBoards();
+            const grid = document.getElementById("bag-grid");
+            if (!grid) return;
+
+            if (logs.length === 0) {
+                grid.innerHTML = `<div class="empty-note" style="grid-column:1/-1;">아직 뽑은 쿠지가 없습니다.</div>`;
+                return;
+            }
+
+            grid.innerHTML = logs.map(l => {
+                const board = boards[l.boardId];
+                let gradeCfg = null;
+                if (board && board.grades) {
+                    gradeCfg = (l.gradeId && board.grades.find(g => g.id === l.gradeId))
+                        || board.grades.find(g => g.rank === l.rank)
+                        || null;
+                }
+                const image = gradeCfg ? gradeCfg.image : "";
+
+                /* [신규 추가] 교환신청 상태에 따라 버튼/문구 다르게 표시 */
+                const ex = exchanges.find(e => e.logId === l.id);
+                let actionHtml;
+                if (!ex) {
+                    actionHtml = `<button class="btn qty-btn exchange-action-btn" onclick="requestExchange('${l.id}')">교환신청</button>`;
+                } else if (ex.status === "pending") {
+                    actionHtml = `<div class="exchange-status-text" style="color:var(--text-muted);">⏳ 신청 대기중</div>`;
+                } else if (ex.status === "done") {
+                    /* [신규 추가] 지급완료 시 작은 삭제 버튼을 함께 표시 */
+                    actionHtml = `
+                        <div class="exchange-status-text" style="color:#2bb673;">✅ 지급완료</div>
+                        <button class="btn delete-btn exchange-action-btn" onclick="deleteBagItem('${l.id}')">🗑️ 삭제</button>
+                    `;
+                } else {
+                    actionHtml = `<button class="btn delete-btn exchange-action-btn" onclick="requestExchange('${l.id}')">❌ 거절됨 (재신청)</button>`;
+                }
+
+                return `
+                    <div class="bag-card">
+                        <div class="bag-img">${imgWithFallback(image, l.rank + "상", l.rank)}</div>
+                        <div class="bag-rank">${l.rank}상</div>
+                        ${actionHtml}
+                    </div>
+                `;
+            }).join("");
+        }
+
+        /* ============================================================
+           [신규 추가] 교환신청(환전/교환) 기능
+        ============================================================ */
+        function getExchanges() {
+            try {
+                const stored = localStorage.getItem("kuji_exchanges");
+                const parsed = stored ? JSON.parse(stored) : memoryExchanges;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return Array.isArray(memoryExchanges) ? memoryExchanges : []; }
+        }
+        function saveExchanges(list) {
+            memoryExchanges = list;
+            try { localStorage.setItem("kuji_exchanges", JSON.stringify(list)); } catch (e) {}
+        }
+
+        function requestExchange(logId) {
+            const logs = getLogs();
+            const log = logs.find(l => l.id === logId);
+            if (!log) return;
+
+            const exchanges = getExchanges();
+            const existing = exchanges.find(e => e.logId === logId);
+            if (existing) {
+                if (existing.status === "rejected") {
+                    existing.status = "pending";
+                    existing.requestTime = new Date().toISOString();
+                    saveExchanges(exchanges);
+                    renderBag();
+                }
+                return;
+            }
+
+            exchanges.push({
+                id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+                logId: log.id,
+                userId: currentUserId,
+                boardId: log.boardId,
+                kujiTitle: log.kujiTitle,
+                rank: log.rank,
+                prizeName: log.prizeName || "",
+                status: "pending",
+                requestTime: new Date().toISOString()
+            });
+            saveExchanges(exchanges);
+            renderBag();
+        }
+
+        /* [신규 추가] 지급완료된 항목을 이용자가 가방에서 삭제 (교환신청 기록에 removed 표시) */
+        function deleteBagItem(logId) {
+            const exchanges = getExchanges();
+            const ex = exchanges.find(e => e.logId === logId);
+            if (!ex || ex.status !== "done") return;
+            ex.removed = true;
+            saveExchanges(exchanges);
+            renderBag();
+        }
+
+        let adminExchangeFilter = "PENDING";
+
+        function openAdminExchange() {
+            adminExchangeFilter = "PENDING";
+            goToViewSafely("admin-exchange-view", () => {
+                renderExchangeFilterRow();
+                renderExchangeList();
+            });
+        }
+
+        function renderExchangeFilterRow() {
+            const row = document.getElementById("exchange-filter-row");
+            if (!row) return;
+            const tabs = [["PENDING", "미처리"], ["DONE", "처리완료"], ["REJECTED", "거절"]];
+            row.innerHTML = tabs.map(([key, label]) =>
+                `<button class="btn filter-btn ${adminExchangeFilter === key ? "active" : ""}" onclick="setExchangeFilter('${key}')">${label}</button>`
+            ).join("");
+        }
+
+        function setExchangeFilter(key) {
+            adminExchangeFilter = key;
+            renderExchangeFilterRow();
+            renderExchangeList();
+        }
+
+        function renderExchangeList() {
+            const list = document.getElementById("exchange-list");
+            if (!list) return;
+            const statusMap = { PENDING: "pending", DONE: "done", REJECTED: "rejected" };
+            const targetStatus = statusMap[adminExchangeFilter];
+            const exchanges = getExchanges()
+                .filter(e => e.status === targetStatus)
+                .sort((a, b) => new Date(b.requestTime) - new Date(a.requestTime));
+
+            if (exchanges.length === 0) {
+                list.innerHTML = `<div class="empty-note">해당하는 신청이 없습니다.</div>`;
+                return;
+            }
+
+            list.innerHTML = exchanges.map(e => `
+                <div class="prize-log-row">
+                    <div class="prize-log-left">${e.rank}상</div>
+                    <div class="prize-log-right">
+                        <div class="prize-log-user">${e.userId} · ${e.kujiTitle || ""}</div>
+                        <div class="prize-log-time">${e.prizeName || ""} · ${formatTime(e.requestTime)}</div>
+                        ${e.status === "pending" ? `
+                        <div style="display:flex; gap:6px; margin-top:6px;">
+                            <button class="btn toggle-on-btn" onclick="setExchangeStatus('${e.id}','done')">완료</button>
+                            <button class="btn delete-btn" onclick="setExchangeStatus('${e.id}','rejected')">거절</button>
+                        </div>` : ""}
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function setExchangeStatus(id, status) {
+            const exchanges = getExchanges();
+            const ex = exchanges.find(e => e.id === id);
+            if (!ex) return;
+            ex.status = status;
+            ex.processedTime = new Date().toISOString();
+            saveExchanges(exchanges);
+            renderExchangeList();
+        }
+
+        /* ============================================================
+           [신규 추가] 문의하기(1:1 실시간 채팅) 기능
+        ============================================================ */
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+        }
+
+        function getInquiries() {
+            try {
+                const stored = localStorage.getItem("kuji_inquiries");
+                const parsed = stored ? JSON.parse(stored) : memoryInquiries;
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return Array.isArray(memoryInquiries) ? memoryInquiries : []; }
+        }
+        function saveInquiries(list) {
+            memoryInquiries = list;
+            try { localStorage.setItem("kuji_inquiries", JSON.stringify(list)); } catch (e) {}
+        }
+
+        function getUserOpenInquiry(userId) {
+            return getInquiries().find(i => i.userId === userId && i.status === "open") || null;
+        }
+
+        let inquiryWatcherInterval = null;
+        function startInquiryWatcher() {
+            stopInquiryWatcher();
+            inquiryWatcherInterval = setInterval(() => {
+                if (!currentUserId) return;
+                try { updateInquiryBadge(); } catch (e) {}
+
+                const inquiryViewEl = document.getElementById("inquiry-view");
+                if (inquiryViewEl && !inquiryViewEl.classList.contains("hidden")) {
+                    try { renderInquiryChat(); } catch (e) {}
+                }
+                const adminChatEl = document.getElementById("admin-inquiry-chat-view");
+                if (adminChatEl && !adminChatEl.classList.contains("hidden")) {
+                    try { renderAdminInquiryChat(); } catch (e) {}
+                }
+                const adminListEl = document.getElementById("admin-inquiry-view");
+                if (adminListEl && !adminListEl.classList.contains("hidden")) {
+                    try { renderAdminInquiryList(); } catch (e) {}
+                }
+            }, 3000);
+        }
+        function stopInquiryWatcher() {
+            if (inquiryWatcherInterval) { clearInterval(inquiryWatcherInterval); inquiryWatcherInterval = null; }
+        }
+
+        function updateInquiryBadge() {
+            const badge = document.getElementById("inquiry-badge");
+            if (!badge || !currentUserId) return;
+            const inquiry = getUserOpenInquiry(currentUserId);
+            const hasUnread = !!(inquiry && inquiry.userUnread);
+            badge.classList.toggle("hidden", !hasUnread);
+        }
+
+        function renderChatBubbles(messages, selfSender) {
+            if (!messages || messages.length === 0) {
+                return `<div class="empty-note">아직 대화 내용이 없습니다.</div>`;
+            }
+            return messages.map(m => `
+                <div class="chat-bubble-row" style="text-align:${m.sender === selfSender ? "right" : "left"};">
+                    <span class="chat-bubble ${m.sender === "user" ? "user" : "admin"}">${escapeHtml(m.text)}</span>
+                    <div class="chat-time">${formatTime(m.time)}</div>
+                </div>
+            `).join("");
+        }
+
+        function openInquiry() {
+            goToViewSafely("inquiry-view", () => {
+                renderInquiryChat();
+            });
+        }
+
+        /* [신규 추가] 문의를 닫지 않고 메인화면으로만 돌아가는 뒤로가기 */
+        function goBackFromInquiry() {
+            showView("menu-view");
+            renderMenu();
+        }
+
+        function renderInquiryChat() {
+            const box = document.getElementById("inquiry-messages");
+            if (!box) return;
+            const inquiries = getInquiries();
+            const inquiry = inquiries.find(i => i.userId === currentUserId && i.status === "open");
+
+            box.innerHTML = inquiry
+                ? renderChatBubbles(inquiry.messages, "user")
+                : `<div class="empty-note">아직 문의 내역이 없습니다. 아래에 메시지를 입력해 문의를 시작해보세요.</div>`;
+            box.scrollTop = box.scrollHeight;
+
+            if (inquiry && inquiry.userUnread) {
+                inquiry.userUnread = false;
+                saveInquiries(inquiries);
+            }
+            updateInquiryBadge();
+        }
+
+        function sendInquiryMessage() {
+            const input = document.getElementById("inquiry-input");
+            const text = input.value.trim();
+            if (!text) return;
+
+            const inquiries = getInquiries();
+            let inquiry = inquiries.find(i => i.userId === currentUserId && i.status === "open");
+            const now = new Date().toISOString();
+            if (!inquiry) {
+                inquiry = {
+                    id: Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+                    userId: currentUserId,
+                    status: "open",
+                    messages: [],
+                    userUnread: false,
+                    createdTime: now,
+                    updatedTime: now
+                };
+                inquiries.push(inquiry);
+            }
+            inquiry.messages.push({ sender: "user", text, time: now });
+            inquiry.updatedTime = now;
+            saveInquiries(inquiries);
+            input.value = "";
+            renderInquiryChat();
+        }
+
+        function closeInquiryByUser() {
+            const inquiries = getInquiries();
+            const inquiry = inquiries.find(i => i.userId === currentUserId && i.status === "open");
+            if (inquiry) {
+                inquiry.status = "closed";
+                inquiry.updatedTime = new Date().toISOString();
+                saveInquiries(inquiries);
+            }
+            showView("menu-view");
+            renderMenu();
+        }
+
+        let adminInquiryFilter = "OPEN";
+
+        function openAdminInquiry() {
+            adminInquiryFilter = "OPEN";
+            goToViewSafely("admin-inquiry-view", () => {
+                renderInquiryFilterRow();
+                renderAdminInquiryList();
+            });
+        }
+
+        function renderInquiryFilterRow() {
+            const row = document.getElementById("inquiry-filter-row");
+            if (!row) return;
+            const tabs = [["OPEN", "미처리"], ["CLOSED", "처리완료"], ["DELETED", "삭제"]];
+            row.innerHTML = tabs.map(([key, label]) =>
+                `<button class="btn filter-btn ${adminInquiryFilter === key ? "active" : ""}" onclick="setInquiryFilter('${key}')">${label}</button>`
+            ).join("");
+        }
+
+        function setInquiryFilter(key) {
+            adminInquiryFilter = key;
+            renderInquiryFilterRow();
+            renderAdminInquiryList();
+        }
+
+        function renderAdminInquiryList() {
+            const list = document.getElementById("admin-inquiry-list");
+            if (!list) return;
+            const statusMap = { OPEN: "open", CLOSED: "closed", DELETED: "deleted" };
+            const targetStatus = statusMap[adminInquiryFilter];
+            const inquiries = getInquiries()
+                .filter(i => i.status === targetStatus)
+                .sort((a, b) => new Date(b.updatedTime) - new Date(a.updatedTime));
+
+            if (inquiries.length === 0) {
+                list.innerHTML = `<div class="empty-note">해당하는 문의가 없습니다.</div>`;
+                return;
+            }
+
+            list.innerHTML = inquiries.map(inq => {
+                const lastMsg = inq.messages[inq.messages.length - 1];
+                const preview = lastMsg ? escapeHtml(lastMsg.text).slice(0, 24) : "(대화 없음)";
+                return `
+                    <div class="prize-log-row">
+                        <div class="prize-log-left" style="font-size:22px;">💬</div>
+                        <div class="prize-log-right">
+                            <div class="prize-log-user">${inq.userId}</div>
+                            <div class="prize-log-time">${preview} · ${formatTime(inq.updatedTime)}</div>
+                            <div style="display:flex; gap:6px; margin-top:6px;">
+                                ${inq.status === "open" ? `<button class="btn grant-btn" onclick="openAdminInquiryChat('${inq.id}')">문의받기</button>` : ""}
+                                ${inq.status !== "deleted" ? `<button class="btn delete-btn" onclick="deleteInquiry('${inq.id}')">삭제</button>` : ""}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function deleteInquiry(id) {
+            const inquiries = getInquiries();
+            const inq = inquiries.find(i => i.id === id);
+            if (!inq) return;
+            inq.status = "deleted";
+            saveInquiries(inquiries);
+            renderAdminInquiryList();
+        }
+
+        let currentAdminInquiryId = null;
+
+        function openAdminInquiryChat(id) {
+            currentAdminInquiryId = id;
+            goToViewSafely("admin-inquiry-chat-view", renderAdminInquiryChat);
+        }
+
+        function renderAdminInquiryChat() {
+            const title = document.getElementById("admin-inquiry-chat-title");
+            const box = document.getElementById("admin-inquiry-messages");
+            const inquiry = getInquiries().find(i => i.id === currentAdminInquiryId);
+
+            if (!inquiry) {
+                if (title) title.innerText = "💬 대화";
+                if (box) box.innerHTML = `<div class="empty-note">문의를 찾을 수 없습니다.</div>`;
+                return;
+            }
+            if (title) title.innerText = `💬 ${inquiry.userId}님과의 대화`;
+            if (box) {
+                box.innerHTML = renderChatBubbles(inquiry.messages, "admin");
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        function sendAdminInquiryMessage() {
+            const input = document.getElementById("admin-inquiry-input");
+            const text = input.value.trim();
+            if (!text || !currentAdminInquiryId) return;
+
+            const inquiries = getInquiries();
+            const inquiry = inquiries.find(i => i.id === currentAdminInquiryId);
+            if (!inquiry) return;
+
+            const now = new Date().toISOString();
+            inquiry.messages.push({ sender: "admin", text, time: now });
+            inquiry.updatedTime = now;
+            inquiry.userUnread = true;
+            saveInquiries(inquiries);
+            input.value = "";
+            renderAdminInquiryChat();
+        }
+
+        function closeInquiryByAdmin() {
+            if (!currentAdminInquiryId) return;
+            const inquiries = getInquiries();
+            const inquiry = inquiries.find(i => i.id === currentAdminInquiryId);
+            if (inquiry) {
+                inquiry.status = "closed";
+                inquiry.updatedTime = new Date().toISOString();
+                saveInquiries(inquiries);
+            }
+            showView("admin-inquiry-view");
+            renderInquiryFilterRow();
+            renderAdminInquiryList();
+        }
+
+        let customModalCallback = null;
+
+        function openCustomModal(opts) {
+            document.getElementById("custom-modal-title").innerText = opts.title || "";
+            document.getElementById("custom-modal-desc").innerText = opts.desc || "";
+            document.getElementById("custom-modal-error").innerText = "";
+
+            const inputGroup = document.getElementById("custom-modal-input-group");
+            const input = document.getElementById("custom-modal-input");
+            if (opts.showInput) {
+                inputGroup.classList.remove("hidden");
+                input.placeholder = opts.inputPlaceholder || "";
+                input.value = (opts.inputValue !== undefined) ? opts.inputValue : "";
+            } else {
+                inputGroup.classList.add("hidden");
+                input.value = "";
+            }
+
+            customModalCallback = opts.onConfirm || null;
+            document.getElementById("custom-modal-overlay").classList.remove("hidden");
+            if (opts.showInput) setTimeout(() => input.focus(), 50);
+        }
+
+        function closeCustomModal() {
+            document.getElementById("custom-modal-overlay").classList.add("hidden");
+            customModalCallback = null;
+        }
+
+        function submitCustomModal() {
+            const input = document.getElementById("custom-modal-input");
+            const value = input.value;
+            const cb = customModalCallback;
+            if (!cb) { closeCustomModal(); return; }
+            const result = cb(value);
+            if (result === false) return;
+            closeCustomModal();
+        }
+
+        function openAdmin() {
+            if (!currentUserId || !ADMIN_IDS.includes(currentUserId)) return;
+            showView("admin-view");
+        }
+
+        /* ============================================================
+           [수정됨] goToViewSafely: 렌더링 중 오류가 나면 기존에는
+           콘솔에만 로그를 남기고 화면은 그냥 텅 비어 보였습니다.
+           이제는 해당 화면의 admin-section / kuji-list 영역에
+           안내 문구를 표시해서 "아무것도 안 뜨는" 상황이 생기지 않게 했습니다.
+        ============================================================ */
+        function goToViewSafely(viewId, renderFn) {
+            showView(viewId);
+            try {
+                if (typeof renderFn === "function") renderFn();
+            } catch (e) {
+                console.error(`${viewId} render error`, e);
+                const view = document.getElementById(viewId);
+                const container = view ? view.querySelector(".admin-section, .kuji-list, .bag-grid") : null;
+                if (container) {
+                    container.innerHTML = `<div class="empty-note">화면을 불러오는 중 오류가 발생했습니다. 뒤로 갔다가 다시 시도해주세요.</div>`;
+                }
+            }
+        }
+
+        let draftPromoImages = [];
+
+        function openAdminPromo() {
+            goToViewSafely("admin-promo-view", () => {
+                const promo = getPromo();
+                draftPromoImages = (promo.images && promo.images.length > 0) ? promo.images.slice() : [""];
+                renderPromoImageFields();
+                document.getElementById("promo-msg").innerText = "";
+            });
+        }
+
+        function renderPromoImageFields() {
+            const c = document.getElementById("promo-image-fields");
+            c.innerHTML = draftPromoImages.map((url, idx) => `
+                <div class="promo-image-row">
+                    <input type="text" value="${url}" placeholder="이미지 URL (${idx + 1}번)" oninput="draftPromoImages[${idx}]=this.value">
+                    <button class="btn delete-btn" onclick="removePromoImageField(${idx})">✕</button>
+                </div>
+            `).join("");
+        }
+
+        function addPromoImageField() {
+            if (draftPromoImages.length >= 10) { document.getElementById("promo-msg").innerText = "최대 10장까지 등록할 수 있습니다."; return; }
+            draftPromoImages.push("");
+            renderPromoImageFields();
+        }
+
+        function removePromoImageField(idx) {
+            draftPromoImages.splice(idx, 1);
+            if (draftPromoImages.length === 0) draftPromoImages.push("");
+            renderPromoImageFields();
+        }
+
+        function savePromoImages() {
+            const images = draftPromoImages.map(x => x.trim()).filter(x => x).slice(0, 10);
+            savePromoData({ images });
+            document.getElementById("promo-msg").style.color = "#2bb673";
+            document.getElementById("promo-msg").innerText = "배너가 저장되었습니다!";
+            promoIndex = 0;
+        }
+
+        function openAdminUsers() {
+            goToViewSafely("admin-users-view", () => {
+                document.getElementById("user-search-input").value = "";
+                document.getElementById("user-log-box").classList.add("hidden");
+                renderUserList("");
+            });
+        }
+
+        function renderUserList(filterText) {
+            const users = getUsers();
+            const listEl = document.getElementById("admin-user-list");
+            if (!listEl) return;
+            const filter = (filterText || "").trim();
+            const ids = Object.keys(users).filter(id => !filter || id.includes(filter));
+
+            if (ids.length === 0) {
+                listEl.innerHTML = `<div class="empty-note">해당하는 유저가 없습니다.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = "";
+            ids.forEach(id => {
+                const row = document.createElement("div");
+                row.className = "admin-user-row";
+                row.innerHTML = `
+                    <div>
+                        <div class="admin-user-id">👤 ${id}${ADMIN_IDS.includes(id) ? " (관리자)" : ""}</div>
+                        <div class="admin-user-coin">🪙 ${users[id].coins || 0}코인 · 사용 ${users[id].spent || 0}코인</div>
+                    </div>
+                    <div class="admin-user-actions">
+                        <button class="btn log-btn" onclick="viewUserLog('${id}')">📜 로그</button>
+                        <button class="btn grant-btn" onclick="grantCoinsTo('${id}')">🪙 코인지급</button>
+                        <button class="btn reclaim-btn" onclick="reclaimCoinsFrom('${id}')">💸 코인회수</button>
+                        <button class="btn delete-btn" onclick="deleteUserAccount('${id}')">🗑️ 삭제</button>
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        function grantCoinsTo(id) {
+            openCustomModal({
+                title: "🪙 코인 지급",
+                desc: `${id}님에게 지급할 코인 수를 입력하세요.`,
+                showInput: true,
+                inputPlaceholder: "예: 100",
+                inputValue: "100",
+                onConfirm: (value) => {
+                    const amount = parseInt(value, 10);
+                    if (isNaN(amount) || amount <= 0) {
+                        document.getElementById("custom-modal-error").innerText = "1 이상의 숫자를 입력해주세요.";
+                        return false;
+                    }
+                    const users = getUsers();
+                    if (!users[id]) return;
+                    users[id].coins = (users[id].coins || 0) + amount;
+                    saveUsers(users);
+                    if (id === currentUserId) updateCoinDisplay();
+                    renderUserList(document.getElementById("user-search-input").value);
+                }
+            });
+        }
+
+        function reclaimCoinsFrom(id) {
+            openCustomModal({
+                title: "💸 코인 회수",
+                desc: `${id}님에게서 회수할 코인 수를 입력하세요.`,
+                showInput: true,
+                inputPlaceholder: "예: 100",
+                inputValue: "100",
+                onConfirm: (value) => {
+                    const amount = parseInt(value, 10);
+                    if (isNaN(amount) || amount <= 0) {
+                        document.getElementById("custom-modal-error").innerText = "1 이상의 숫자를 입력해주세요.";
+                        return false;
+                    }
+                    const users = getUsers();
+                    if (!users[id]) return;
+                    users[id].coins = Math.max(0, (users[id].coins || 0) - amount);
+                    saveUsers(users);
+                    if (id === currentUserId) updateCoinDisplay();
+                    renderUserList(document.getElementById("user-search-input").value);
+                }
+            });
+        }
+
+        function deleteUserAccount(id) {
+            openCustomModal({
+                title: "🗑️ 유저 삭제",
+                desc: `정말 "${id}" 계정을 완전히 삭제할까요?`,
+                showInput: false,
+                onConfirm: () => {
+                    const users = getUsers();
+                    delete users[id];
+                    saveUsers(users);
+                    renderUserList(document.getElementById("user-search-input").value);
+                }
+            });
+        }
+
+        function viewUserLog(id) {
+            const logs = getLogs().filter(l => l.userId === id).sort((a, b) => new Date(b.time) - new Date(a.time));
+            document.getElementById("user-log-title").innerText = `📜 ${id}님의 뽑기 로그`;
+            const content = document.getElementById("user-log-content");
+
+            if (logs.length === 0) {
+                content.innerHTML = `<div class="empty-note">아직 뽑기 기록이 없습니다.</div>`;
+            } else {
+                let entriesHtml = "";
+                logs.forEach(l => {
+                    entriesHtml += `<div class="admin-log-entry">[${formatTime(l.time)}] ${l.kujiTitle} → ${l.rank}상 (${l.prizeName})</div>`;
+                });
+                content.innerHTML = entriesHtml;
+            }
+            document.getElementById("user-log-box").classList.remove("hidden");
+        }
+
+        let prizeLogFilter = "ALL";
+
+        function openAdminPrizeLog() {
+            prizeLogFilter = "ALL";
+            goToViewSafely("admin-prizelog-view", () => {
+                renderPrizeLogFilterRow();
+                renderPrizeLog();
+            });
+        }
+
+        function renderPrizeLogFilterRow() {
+            const row = document.getElementById("prizelog-filter-row");
+            if (!row) return;
+            const logs = getLogs();
+            const uniqueRanks = Array.from(new Set(logs.map(l => l.rank).filter(Boolean))).sort();
+            const options = ["ALL", ...uniqueRanks];
+            row.innerHTML = options.map(g => `
+                <button class="btn filter-btn ${prizeLogFilter === g ? "active" : ""}" onclick="setPrizeLogFilter('${g}')">${g === "ALL" ? "전체" : g + "상"}</button>
+            `).join("");
+        }
+
+        function setPrizeLogFilter(g) {
+            prizeLogFilter = g;
+            renderPrizeLogFilterRow();
+            renderPrizeLog();
+        }
+
+        function renderPrizeLog() {
+            const list = document.getElementById("prize-log-list");
+            if (!list) return;
+            const logs = getLogs()
+                .filter(l => prizeLogFilter === "ALL" || l.rank === prizeLogFilter)
+                .sort((a, b) => new Date(b.time) - new Date(a.time));
+
+            if (logs.length === 0) {
+                list.innerHTML = `<div class="empty-note">기록이 없습니다.</div>`;
+                return;
+            }
+
+            list.innerHTML = logs.map(l => `
+                <div class="prize-log-row">
+                    <div class="prize-log-left">${l.rank}상</div>
+                    <div class="prize-log-right">
+                        <div class="prize-log-user">${l.userId}</div>
+                        <div class="prize-log-time">${formatTime(l.time)}</div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function openAdminBoardsGate() {
+            goToViewSafely("admin-boards-gate", () => {
+                document.getElementById("gate-id").value = "";
+                document.getElementById("gate-pw").value = "";
+                document.getElementById("gate-msg").innerText = "";
+            });
+        }
+
+        function verifyBoardsGate() {
+            const id = document.getElementById("gate-id").value.trim();
+            const pw = document.getElementById("gate-pw").value.trim();
+            const users = getUsers();
+
+            if (ADMIN_IDS.includes(id) && users[id] && users[id].pw === pw) {
+                goToViewSafely("admin-boards-view", renderAdminBoardsList);
+            } else {
+                document.getElementById("gate-msg").innerText = "아이디 또는 비밀번호가 올바르지 않습니다.";
+            }
+        }
+
+        function renderAdminBoardsList() {
+            ensureAllBoards();
+            const boards = getBoards();
+            const listEl = document.getElementById("admin-boards-list");
+            if (!listEl) return;
+            listEl.innerHTML = "";
+
+            BOARD_ID_ORDER.forEach(id => {
+                const board = boards[id];
+                if (!board) return;
+                const stock = getStock(board);
+
+                const row = document.createElement("div");
+                row.className = "kuji-row";
+                row.onclick = () => loadBoardEditForm(id);
+
+                const fallback = (board.title || "?").slice(0, 1);
+
+                row.innerHTML = `
+                    <div class="img-fallback-box">${imgWithFallback(board.image, board.title, fallback)}</div>
+                    <div class="kuji-row-info">
+                        <div class="kuji-row-title">${board.title}</div>
+                        <div class="kuji-row-desc">재고 ${stock}/${board.totalStock} · N개 조건(${board.rigThreshold}개) ${board.rigOn ? "ON" : "OFF"}</div>
+                    </div>
+                `;
+                listEl.appendChild(row);
+            });
+        }
+
+        /* ===================== 쿠지판 편집 관련 핵심 복원 로직 ===================== */
+
+        let draftBoard = null;
+        let draftBoardId = null;
+
+        /* ============================================================
+           [수정됨] loadBoardEditForm: 편집 화면에 들어오기 직전에
+           ensureAllBoards()를 다시 한번 호출해서, 저장된 데이터가
+           예전 형식이거나 일부 필드가 비어있어도 항상 정상적인
+           구조(grades/blacklist/rigOn/rigThreshold 포함)로 보정한 뒤
+           불러오도록 했습니다. 이 부분이 "쿠지판 편집을 눌러도
+           아무것도 안 뜨는" 문제의 핵심 원인이었습니다.
+        ============================================================ */
+        function loadBoardEditForm(id) {
+            goToViewSafely("board-edit-view", () => {
+                ensureAllBoards();
+                const boards = getBoards();
+                const board = boards[id];
+                if (!board) throw new Error("해당 쿠지판을 찾을 수 없습니다: " + id);
+                draftBoardId = id;
+                draftBoard = JSON.parse(JSON.stringify(board));
+                if (!Array.isArray(draftBoard.grades)) draftBoard.grades = [];
+                if (!Array.isArray(draftBoard.blacklist)) draftBoard.blacklist = [];
+                renderBoardEditForm();
+            });
+        }
+
+        function renderBoardEditForm() {
+            const c = document.getElementById("board-edit-form");
+            if (!c || !draftBoard) return;
+
+            let gradeHtml = "";
+            draftBoard.grades.forEach((g, idx) => {
+                gradeHtml += `
+                    <div class="grade-edit-row">
+                        <div class="grade-edit-row-top">
+                            <span class="grade-edit-label">${idx + 1}번째 등급</span>
+                            <button class="btn delete-btn" style="padding:4px 10px; font-size:11px;" onclick="removeGradeRow(${idx})">삭제</button>
+                        </div>
+                        <input type="text" placeholder="등급 이름 (예: A, B, C... L상)" value="${g.rank || ""}" oninput="draftBoard.grades[${idx}].rank=this.value">
+                        <input type="text" placeholder="상품명" value="${g.name || ""}" oninput="draftBoard.grades[${idx}].name=this.value">
+                        <input type="text" placeholder="상품 사진 URL" value="${g.image || ""}" oninput="draftBoard.grades[${idx}].image=this.value">
+                        <input type="number" placeholder="확률(%)" value="${g.chance}" oninput="draftBoard.grades[${idx}].chance=parseFloat(this.value)||0; updateGradeSumLabel();">
+                        <input type="number" placeholder="최대 개수 (0=무제한)" value="${g.maxCount}" oninput="draftBoard.grades[${idx}].maxCount=parseInt(this.value)||0">
+                        <div class="grade-edit-sub">판매됨: ${g.soldCount || 0}개 ${idx === 0 ? "★ (맨 위 등급: N개 조건 적용 대상)" : ""}</div>
+                    </div>
+                `;
+            });
+
+            if (!draftBoard.grades.length) {
+                gradeHtml = `<div class="empty-note">설정된 등급이 없습니다. 아래 버튼으로 추가해주세요.</div>`;
+            }
+
+            const totalChance = draftBoard.grades.reduce((s, g) => s + (Number(g.chance) || 0), 0);
+
+            const blacklistHtml = (draftBoard.blacklist || []).length
+                ? draftBoard.blacklist.map(id => `<span class="blacklist-chip">${id} <button onclick="removeBlacklistId('${id}')">✕</button></span>`).join("")
+                : `<span class="empty-note">블랙리스트가 비어있습니다.</span>`;
+
+            c.innerHTML = `
+                <div class="input-group"><label>쿠지판 이름</label><input type="text" value="${draftBoard.title}" oninput="draftBoard.title=this.value"></div>
+                <div class="input-group"><label>상세 설명</label><input type="text" value="${draftBoard.desc}" oninput="draftBoard.desc=this.value"></div>
+                <div class="input-group"><label>대표 사진 URL</label><input type="text" value="${draftBoard.image}" oninput="draftBoard.image=this.value"></div>
+                <div class="input-group"><label>1회 가격 (코인)</label><input type="number" value="${draftBoard.cost}" oninput="draftBoard.cost=parseInt(this.value)||0"></div>
+                <div class="input-group"><label>총 뽑기 재고</label><input type="number" value="${draftBoard.totalStock}" oninput="draftBoard.totalStock=parseInt(this.value)||0"></div>
+
+                <div class="input-group">
+                    <label>N개 이상 팔려야 맨 위 등급(A상) 등장 조건</label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button class="btn ${draftBoard.rigOn ? "toggle-on-btn" : "toggle-off-btn"}" onclick="draftBoard.rigOn=!draftBoard.rigOn; renderBoardEditForm();">${draftBoard.rigOn ? "ON" : "OFF"}</button>
+                        <input type="number" style="width:90px;" value="${draftBoard.rigThreshold}" oninput="draftBoard.rigThreshold=parseInt(this.value)||0"> 개 이상 팔릴 때 등장
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>블랙리스트 (최상위 등급 당첨 불가 유저)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="blacklist-input" placeholder="유저 아이디 입력">
+                        <button class="btn qty-btn" onclick="addBlacklistId()">추가</button>
+                    </div>
+                    <div style="margin-top:8px;">${blacklistHtml}</div>
+                </div>
+
+                <div class="input-group">
+                    <label>상품 및 확률 설정 (~상, 상품명, 확률, 재고 수량)</label>
+                    ${gradeHtml}
+                    <div class="admin-log-summary" id="grade-sum-label">현재 확률 합계: ${totalChance}% ${totalChance !== 100 ? "(100%가 되도록 조정하는 것을 권장합니다)" : ""}</div>
+                    <button class="btn qty-btn" style="margin-top:6px;" onclick="addGradeRow()">+ 등급 추가 (A~L상)</button>
+                </div>
+
+                <button class="auth-btn" onclick="saveBoardEdit()">저장하기</button>
+                <button class="btn delete-btn" style="width:100%; margin-top:10px;" onclick="resetBoardSales()">🔄 현재 쿠지판 판매 기록 초기화</button>
+                <div class="msg-box" id="board-edit-msg"></div>
+            `;
+        }
+
+        function updateGradeSumLabel() {
+            const label = document.getElementById("grade-sum-label");
+            if (!label || !draftBoard) return;
+            const totalChance = draftBoard.grades.reduce((s, g) => s + (Number(g.chance) || 0), 0);
+            label.innerText = `현재 확률 합계: ${totalChance}% ${totalChance !== 100 ? "(100%가 되도록 조정하는 것을 권장합니다)" : ""}`;
+        }
+
+        function addGradeRow() {
+            if (!draftBoard.grades) draftBoard.grades = [];
+            const nextCharCode = 65 + draftBoard.grades.length; // A, B, C... 순서 자동 부여
+            const nextRank = nextCharCode <= 76 ? String.fromCharCode(nextCharCode) : "기타";
+            draftBoard.grades.push({ id: makeGradeId(), rank: nextRank, name: "", image: "", chance: 0, maxCount: 0, soldCount: 0 });
+            renderBoardEditForm();
+        }
+
+        function removeGradeRow(idx) {
+            draftBoard.grades.splice(idx, 1);
+            renderBoardEditForm();
+        }
+
+        function resetBoardSales() {
+            draftBoard.soldCount = 0;
+            (draftBoard.grades || []).forEach(g => { g.soldCount = 0; });
+            renderBoardEditForm();
+            const msg = document.getElementById("board-edit-msg");
+            msg.style.color = "#2bb673";
+            msg.innerText = "판매 기록이 초기화되었습니다. [저장하기]를 눌러 반영하세요.";
+        }
+
+        function addBlacklistId() {
+            const input = document.getElementById("blacklist-input");
+            const v = input.value.trim();
+            if (!v) return;
+            if (!draftBoard.blacklist) draftBoard.blacklist = [];
+            if (!draftBoard.blacklist.includes(v)) draftBoard.blacklist.push(v);
+            renderBoardEditForm();
+        }
+
+        function removeBlacklistId(id) {
+            draftBoard.blacklist = (draftBoard.blacklist || []).filter(x => x !== id);
+            renderBoardEditForm();
+        }
+
+        function saveBoardEdit() {
+            const boards = getBoards();
+            boards[draftBoardId] = draftBoard;
+            saveBoards(boards);
+            const msg = document.getElementById("board-edit-msg");
+            msg.style.color = "#2bb673";
+            msg.innerText = "성공적으로 저장되었습니다!";
+        }
+    </script>
+</body>
+</html>

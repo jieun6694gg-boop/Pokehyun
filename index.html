@@ -611,9 +611,27 @@
         }
         .exchange-action-btn { font-size: 10px; padding: 4px 8px; margin-top: 4px; width: 100%; box-sizing: border-box; }
         .exchange-status-text { font-size: 10px; margin-top: 4px; }
+        .sync-indicator {
+            position: fixed;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(43,182,115,0.95);
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .sync-indicator.show { opacity: 1; }
     </style>
 </head>
 <body>
+
+    <div id="sync-indicator" class="sync-indicator">🔄 동기화 중...</div>
 
     <div id="auth-view" class="auth-container">
         <h2 id="auth-title">📝 회원가입</h2>
@@ -915,7 +933,7 @@
     </div>
 
     <script>
-        const ADMIN_IDS = ["박동범"];
+        const ADMIN_IDS = ["김연서"];
         const START_COINS = 0;
 
         const BOARD_SEED = [
@@ -941,16 +959,160 @@
             ];
         }
 
+        /* ============================================================
+           [수정됨] 데이터 저장소: localStorage(브라우저 개별 저장) 대신
+           공용 서버 저장소(window.storage, shared=true)를 사용하도록 교체.
+           이렇게 해야 서로 다른 사용자의 브라우저가 같은 데이터를 보고,
+           주기적 폴링(POLL_INTERVAL_MS)으로 서로의 변경사항을
+           "실시간"에 가깝게 전달받을 수 있습니다.
+        ============================================================ */
+        const STORAGE_KEYS = {
+            users: "kuji_users",
+            boards: "kuji_boards",
+            logs: "kuji_logs",
+            promo: "kuji_promo",
+            exchanges: "kuji_exchanges",
+            inquiries: "kuji_inquiries"
+        };
+        const POLL_INTERVAL_MS = 2500;
+
         let memoryUsers = {};
         let memoryLogs = [];
         let memoryBoards = {};
         let memoryPromo = { images: [] };
-        let memoryExchanges = []; // [신규 추가] 교환신청 목록 메모리 저장소
-        let memoryInquiries = []; // [신규 추가] 문의 채팅 목록 메모리 저장소
+        let memoryExchanges = [];
+        let memoryInquiries = [];
         let currentUserId = null;
         let isSignUpMode = true;
         let promoInterval = null;
         let promoIndex = 0;
+        let dataReady = false;
+        let globalPollInterval = null;
+        let syncIndicatorTimeout = null;
+
+        async function storageGetJSON(key, fallback) {
+            try {
+                const result = await window.storage.get(key, true);
+                if (result && typeof result.value === "string") {
+                    return JSON.parse(result.value);
+                }
+                return fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        async function storageSetJSON(key, value) {
+            try {
+                const result = await window.storage.set(key, JSON.stringify(value), true);
+                if (!result) console.error("storage set returned null for", key);
+            } catch (e) {
+                console.error("storage set error", key, e);
+            }
+        }
+
+        function flashSyncIndicator() {
+            const el = document.getElementById("sync-indicator");
+            if (!el) return;
+            el.classList.add("show");
+            if (syncIndicatorTimeout) clearTimeout(syncIndicatorTimeout);
+            syncIndicatorTimeout = setTimeout(() => el.classList.remove("show"), 700);
+        }
+
+        /* 최초 진입 시 모든 공용 데이터를 서버에서 한 번에 불러옵니다. */
+        async function loadAllFromStorage() {
+            const [users, boards, logs, promo, exchanges, inquiries] = await Promise.all([
+                storageGetJSON(STORAGE_KEYS.users, {}),
+                storageGetJSON(STORAGE_KEYS.boards, {}),
+                storageGetJSON(STORAGE_KEYS.logs, []),
+                storageGetJSON(STORAGE_KEYS.promo, { images: [] }),
+                storageGetJSON(STORAGE_KEYS.exchanges, []),
+                storageGetJSON(STORAGE_KEYS.inquiries, [])
+            ]);
+            memoryUsers = users && typeof users === "object" ? users : {};
+            memoryBoards = boards && typeof boards === "object" ? boards : {};
+            memoryLogs = Array.isArray(logs) ? logs : [];
+            memoryPromo = promo && typeof promo === "object" ? promo : { images: [] };
+            memoryExchanges = Array.isArray(exchanges) ? exchanges : [];
+            memoryInquiries = Array.isArray(inquiries) ? inquiries : [];
+        }
+
+        /* 폴링: 주기적으로 서버 데이터를 다시 읽어서 로컬 캐시와 다르면
+           갱신하고, 현재 보고 있는 화면을 다시 그려줍니다.
+           => 이 매커니즘 덕분에 "다른 사람이 가입/뽑기/문의/쿠지판 수정"을
+              하면 몇 초 안에 내 화면에도 반영됩니다. (완전한 즉시push 방식은
+              아니고 짧은 주기 폴링 방식입니다.) */
+        async function pollAndRefresh() {
+            if (!dataReady) return;
+            try {
+                const [users, boards, logs, promo, exchanges, inquiries] = await Promise.all([
+                    storageGetJSON(STORAGE_KEYS.users, memoryUsers),
+                    storageGetJSON(STORAGE_KEYS.boards, memoryBoards),
+                    storageGetJSON(STORAGE_KEYS.logs, memoryLogs),
+                    storageGetJSON(STORAGE_KEYS.promo, memoryPromo),
+                    storageGetJSON(STORAGE_KEYS.exchanges, memoryExchanges),
+                    storageGetJSON(STORAGE_KEYS.inquiries, memoryInquiries)
+                ]);
+
+                let changed = false;
+                if (JSON.stringify(users) !== JSON.stringify(memoryUsers)) { memoryUsers = users; changed = true; }
+                if (JSON.stringify(boards) !== JSON.stringify(memoryBoards)) { memoryBoards = boards; changed = true; }
+                if (JSON.stringify(logs) !== JSON.stringify(memoryLogs)) { memoryLogs = logs; changed = true; }
+                if (JSON.stringify(promo) !== JSON.stringify(memoryPromo)) { memoryPromo = promo; changed = true; }
+                if (JSON.stringify(exchanges) !== JSON.stringify(memoryExchanges)) { memoryExchanges = exchanges; changed = true; }
+                if (JSON.stringify(inquiries) !== JSON.stringify(memoryInquiries)) { memoryInquiries = inquiries; changed = true; }
+
+                if (changed) {
+                    flashSyncIndicator();
+                    renderCurrentView();
+                }
+            } catch (e) {
+                console.error("poll error", e);
+            }
+        }
+
+        function startGlobalPoller() {
+            stopGlobalPoller();
+            globalPollInterval = setInterval(pollAndRefresh, POLL_INTERVAL_MS);
+        }
+        function stopGlobalPoller() {
+            if (globalPollInterval) { clearInterval(globalPollInterval); globalPollInterval = null; }
+        }
+
+        function getCurrentViewId() {
+            return ALL_VIEWS.find(v => {
+                const el = document.getElementById(v);
+                return el && !el.classList.contains("hidden");
+            });
+        }
+
+        /* 현재 열려있는 화면에 맞춰 다시 그려줍니다.
+           단, 쿠지판 편집 화면(board-edit-view)은 관리자가 입력 중인
+           내용을 덮어쓰지 않도록 자동 갱신에서 제외합니다. */
+        function renderCurrentView() {
+            if (!currentUserId) return;
+            const view = getCurrentViewId();
+            try { updateCoinDisplay(); } catch (e) {}
+            try { updateInquiryBadge(); } catch (e) {}
+
+            switch (view) {
+                case "menu-view": renderMenu(); break;
+                case "board-view": refreshBoardUI(); break;
+                case "bag-view": renderBag(); break;
+                case "inquiry-view": renderInquiryChat(); break;
+                case "admin-users-view": {
+                    const input = document.getElementById("user-search-input");
+                    renderUserList(input ? input.value : "");
+                    break;
+                }
+                case "admin-prizelog-view": renderPrizeLogFilterRow(); renderPrizeLog(); break;
+                case "admin-exchange-view": renderExchangeList(); break;
+                case "admin-inquiry-view": renderAdminInquiryList(); break;
+                case "admin-inquiry-chat-view": renderAdminInquiryChat(); break;
+                case "admin-boards-view": renderAdminBoardsList(); break;
+                default: break;
+            }
+        }
 
         const ALL_VIEWS = [
             "auth-view", "menu-view", "board-view", "bag-view",
@@ -996,35 +1158,41 @@
             }
         }
 
-        function getUsers() {
-            try {
-                const stored = localStorage.getItem("kuji_users");
-                return stored ? JSON.parse(stored) : memoryUsers;
-            } catch (e) { return memoryUsers; }
-        }
+        function getUsers() { return memoryUsers; }
         function saveUsers(users) {
             memoryUsers = users;
-            try { localStorage.setItem("kuji_users", JSON.stringify(users)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.users, users);
         }
 
-        function handleAuth() {
+        async function handleAuth() {
+            if (!dataReady) { showMsg("데이터를 불러오는 중입니다. 잠시만 기다려주세요!"); return; }
             const id = document.getElementById("auth-id").value.trim();
             const pw = document.getElementById("auth-pw").value.trim();
 
             if (!id || !pw) { showMsg("아이디와 비밀번호를 모두 입력해주세요!"); return; }
 
-            let users = getUsers();
+            const submitBtn = document.getElementById("auth-submit-btn");
+            submitBtn.disabled = true;
+
+            /* 가입/로그인 직전에 서버 최신 데이터를 한 번 더 불러와
+               다른 사람이 방금 같은 아이디로 가입했는지 등을 확인합니다. */
+            const freshUsers = await storageGetJSON(STORAGE_KEYS.users, memoryUsers);
+            memoryUsers = freshUsers && typeof freshUsers === "object" ? freshUsers : {};
+            let users = memoryUsers;
 
             if (isSignUpMode) {
-                if (users[id]) { showMsg("이미 존재하는 아이디입니다!"); return; }
+                if (users[id]) { showMsg("이미 존재하는 아이디입니다!"); submitBtn.disabled = false; return; }
                 users[id] = { pw: pw, coins: START_COINS, spent: 0 };
                 saveUsers(users);
+                submitBtn.disabled = false;
                 enterApp(id);
             } else {
                 if (users[id] && users[id].pw === pw) {
+                    submitBtn.disabled = false;
                     enterApp(id);
                 } else {
                     showMsg("아이디 또는 비밀번호가 맞지 않습니다!");
+                    submitBtn.disabled = false;
                 }
             }
         }
@@ -1040,7 +1208,7 @@
             showView("menu-view");
             renderMenu();
             startPromoCarousel();
-            startInquiryWatcher(); // [신규 추가] 문의 채팅 실시간 감시 시작
+            startGlobalPoller();
         }
 
         function logout() {
@@ -1048,7 +1216,7 @@
             document.getElementById("auth-pw").value = "";
             currentUserId = null;
             stopPromoCarousel();
-            stopInquiryWatcher(); // [신규 추가] 문의 채팅 실시간 감시 종료
+            stopGlobalPoller();
             currentAdminInquiryId = null;
             document.getElementById("peel-overlay").classList.add("hidden");
             showView("auth-view");
@@ -1061,15 +1229,10 @@
             document.getElementById("coin-count-board").innerText = coins;
         }
 
-        function getPromo() {
-            try {
-                const stored = localStorage.getItem("kuji_promo");
-                return stored ? JSON.parse(stored) : memoryPromo;
-            } catch (e) { return memoryPromo; }
-        }
+        function getPromo() { return memoryPromo; }
         function savePromoData(promo) {
             memoryPromo = promo;
-            try { localStorage.setItem("kuji_promo", JSON.stringify(promo)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.promo, promo);
         }
 
         function renderPromoBanner() {
@@ -1110,24 +1273,16 @@
             if (promoInterval) { clearInterval(promoInterval); promoInterval = null; }
         }
 
-        function getBoards() {
-            try {
-                const stored = localStorage.getItem("kuji_boards");
-                return stored ? JSON.parse(stored) : memoryBoards;
-            } catch (e) { return memoryBoards; }
-        }
+        function getBoards() { return memoryBoards; }
         function saveBoards(boards) {
             memoryBoards = boards;
-            try { localStorage.setItem("kuji_boards", JSON.stringify(boards)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.boards, boards);
         }
 
         /* ============================================================
-           [수정됨] normalizeBoard: 쿠지판 데이터에 필요한 필드가
-           하나라도 빠져있거나 형식이 깨져 있으면(예전 버전 데이터 등)
-           기본값으로 채워서 항상 온전한 형태로 만들어줍니다.
-           => 이 함수가 없으면 편집 화면에서 draftBoard.grades.reduce 등을
-              호출할 때 오류가 나서 "쿠지판 편집" 화면이 빈 화면으로
-              보이는 문제가 발생했습니다.
+           normalizeBoard: 쿠지판 데이터에 필요한 필드가 하나라도
+           빠져있거나 형식이 깨져 있으면(예전 버전 데이터 등) 기본값으로
+           채워서 항상 온전한 형태로 만들어줍니다.
         ============================================================ */
         function normalizeBoard(seed, board) {
             const b = (board && typeof board === "object") ? board : {};
@@ -1170,16 +1325,10 @@
             if (changed) saveBoards(boards);
         }
 
-        function getLogs() {
-            try {
-                const stored = localStorage.getItem("kuji_logs");
-                const parsed = stored ? JSON.parse(stored) : memoryLogs;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) { return Array.isArray(memoryLogs) ? memoryLogs : []; }
-        }
+        function getLogs() { return Array.isArray(memoryLogs) ? memoryLogs : []; }
         function saveLogs(logs) {
             memoryLogs = logs;
-            try { localStorage.setItem("kuji_logs", JSON.stringify(logs)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.logs, logs);
         }
         function addLog(entry) {
             const logs = getLogs();
@@ -1290,6 +1439,7 @@
         }
 
         function refreshBoardUI() {
+            if (!currentBoardId) return;
             const boards = getBoards();
             const board = boards[currentBoardId];
             if (!board) return;
@@ -1527,11 +1677,9 @@
         }
 
         function renderBag() {
-            const exchanges = getExchanges(); // [신규 추가]
+            const exchanges = getExchanges();
             const logs = getLogs()
                 .filter(l => l.userId === currentUserId)
-                /* [신규 추가] 관리자가 지급완료(done) 처리하고, 이용자가 삭제 버튼을 눌러
-                   가방에서 제거하기로 한(removed) 항목은 가방 목록에서 숨깁니다. */
                 .filter(l => {
                     const ex = exchanges.find(e => e.logId === l.id);
                     return !(ex && ex.status === "done" && ex.removed);
@@ -1556,7 +1704,6 @@
                 }
                 const image = gradeCfg ? gradeCfg.image : "";
 
-                /* [신규 추가] 교환신청 상태에 따라 버튼/문구 다르게 표시 */
                 const ex = exchanges.find(e => e.logId === l.id);
                 let actionHtml;
                 if (!ex) {
@@ -1564,7 +1711,6 @@
                 } else if (ex.status === "pending") {
                     actionHtml = `<div class="exchange-status-text" style="color:var(--text-muted);">⏳ 신청 대기중</div>`;
                 } else if (ex.status === "done") {
-                    /* [신규 추가] 지급완료 시 작은 삭제 버튼을 함께 표시 */
                     actionHtml = `
                         <div class="exchange-status-text" style="color:#2bb673;">✅ 지급완료</div>
                         <button class="btn delete-btn exchange-action-btn" onclick="deleteBagItem('${l.id}')">🗑️ 삭제</button>
@@ -1583,19 +1729,11 @@
             }).join("");
         }
 
-        /* ============================================================
-           [신규 추가] 교환신청(환전/교환) 기능
-        ============================================================ */
-        function getExchanges() {
-            try {
-                const stored = localStorage.getItem("kuji_exchanges");
-                const parsed = stored ? JSON.parse(stored) : memoryExchanges;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) { return Array.isArray(memoryExchanges) ? memoryExchanges : []; }
-        }
+        /* ===================== 교환신청(환전/교환) 기능 ===================== */
+        function getExchanges() { return Array.isArray(memoryExchanges) ? memoryExchanges : []; }
         function saveExchanges(list) {
             memoryExchanges = list;
-            try { localStorage.setItem("kuji_exchanges", JSON.stringify(list)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.exchanges, list);
         }
 
         function requestExchange(logId) {
@@ -1630,7 +1768,6 @@
             renderBag();
         }
 
-        /* [신규 추가] 지급완료된 항목을 이용자가 가방에서 삭제 (교환신청 기록에 removed 표시) */
         function deleteBagItem(logId) {
             const exchanges = getExchanges();
             const ex = exchanges.find(e => e.logId === logId);
@@ -1648,6 +1785,7 @@
                 renderExchangeFilterRow();
                 renderExchangeList();
             });
+            pollAndRefresh();
         }
 
         function renderExchangeFilterRow() {
@@ -1705,52 +1843,19 @@
             renderExchangeList();
         }
 
-        /* ============================================================
-           [신규 추가] 문의하기(1:1 실시간 채팅) 기능
-        ============================================================ */
+        /* ===================== 문의하기(1:1 실시간 채팅) 기능 ===================== */
         function escapeHtml(str) {
             return String(str).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
         }
 
-        function getInquiries() {
-            try {
-                const stored = localStorage.getItem("kuji_inquiries");
-                const parsed = stored ? JSON.parse(stored) : memoryInquiries;
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) { return Array.isArray(memoryInquiries) ? memoryInquiries : []; }
-        }
+        function getInquiries() { return Array.isArray(memoryInquiries) ? memoryInquiries : []; }
         function saveInquiries(list) {
             memoryInquiries = list;
-            try { localStorage.setItem("kuji_inquiries", JSON.stringify(list)); } catch (e) {}
+            storageSetJSON(STORAGE_KEYS.inquiries, list);
         }
 
         function getUserOpenInquiry(userId) {
             return getInquiries().find(i => i.userId === userId && i.status === "open") || null;
-        }
-
-        let inquiryWatcherInterval = null;
-        function startInquiryWatcher() {
-            stopInquiryWatcher();
-            inquiryWatcherInterval = setInterval(() => {
-                if (!currentUserId) return;
-                try { updateInquiryBadge(); } catch (e) {}
-
-                const inquiryViewEl = document.getElementById("inquiry-view");
-                if (inquiryViewEl && !inquiryViewEl.classList.contains("hidden")) {
-                    try { renderInquiryChat(); } catch (e) {}
-                }
-                const adminChatEl = document.getElementById("admin-inquiry-chat-view");
-                if (adminChatEl && !adminChatEl.classList.contains("hidden")) {
-                    try { renderAdminInquiryChat(); } catch (e) {}
-                }
-                const adminListEl = document.getElementById("admin-inquiry-view");
-                if (adminListEl && !adminListEl.classList.contains("hidden")) {
-                    try { renderAdminInquiryList(); } catch (e) {}
-                }
-            }, 3000);
-        }
-        function stopInquiryWatcher() {
-            if (inquiryWatcherInterval) { clearInterval(inquiryWatcherInterval); inquiryWatcherInterval = null; }
         }
 
         function updateInquiryBadge() {
@@ -1777,9 +1882,9 @@
             goToViewSafely("inquiry-view", () => {
                 renderInquiryChat();
             });
+            pollAndRefresh();
         }
 
-        /* [신규 추가] 문의를 닫지 않고 메인화면으로만 돌아가는 뒤로가기 */
         function goBackFromInquiry() {
             showView("menu-view");
             renderMenu();
@@ -1850,6 +1955,7 @@
                 renderInquiryFilterRow();
                 renderAdminInquiryList();
             });
+            pollAndRefresh();
         }
 
         function renderInquiryFilterRow() {
@@ -2008,12 +2114,6 @@
             showView("admin-view");
         }
 
-        /* ============================================================
-           [수정됨] goToViewSafely: 렌더링 중 오류가 나면 기존에는
-           콘솔에만 로그를 남기고 화면은 그냥 텅 비어 보였습니다.
-           이제는 해당 화면의 admin-section / kuji-list 영역에
-           안내 문구를 표시해서 "아무것도 안 뜨는" 상황이 생기지 않게 했습니다.
-        ============================================================ */
         function goToViewSafely(viewId, renderFn) {
             showView(viewId);
             try {
@@ -2075,6 +2175,7 @@
                 document.getElementById("user-log-box").classList.add("hidden");
                 renderUserList("");
             });
+            pollAndRefresh();
         }
 
         function renderUserList(filterText) {
@@ -2194,6 +2295,7 @@
                 renderPrizeLogFilterRow();
                 renderPrizeLog();
             });
+            pollAndRefresh();
         }
 
         function renderPrizeLogFilterRow() {
@@ -2202,6 +2304,7 @@
             const logs = getLogs();
             const uniqueRanks = Array.from(new Set(logs.map(l => l.rank).filter(Boolean))).sort();
             const options = ["ALL", ...uniqueRanks];
+            if (!options.includes(prizeLogFilter)) prizeLogFilter = "ALL";
             row.innerHTML = options.map(g => `
                 <button class="btn filter-btn ${prizeLogFilter === g ? "active" : ""}" onclick="setPrizeLogFilter('${g}')">${g === "ALL" ? "전체" : g + "상"}</button>
             `).join("");
@@ -2290,14 +2393,6 @@
         let draftBoard = null;
         let draftBoardId = null;
 
-        /* ============================================================
-           [수정됨] loadBoardEditForm: 편집 화면에 들어오기 직전에
-           ensureAllBoards()를 다시 한번 호출해서, 저장된 데이터가
-           예전 형식이거나 일부 필드가 비어있어도 항상 정상적인
-           구조(grades/blacklist/rigOn/rigThreshold 포함)로 보정한 뒤
-           불러오도록 했습니다. 이 부분이 "쿠지판 편집을 눌러도
-           아무것도 안 뜨는" 문제의 핵심 원인이었습니다.
-        ============================================================ */
         function loadBoardEditForm(id) {
             goToViewSafely("board-edit-view", () => {
                 ensureAllBoards();
@@ -2390,7 +2485,7 @@
 
         function addGradeRow() {
             if (!draftBoard.grades) draftBoard.grades = [];
-            const nextCharCode = 65 + draftBoard.grades.length; // A, B, C... 순서 자동 부여
+            const nextCharCode = 65 + draftBoard.grades.length;
             const nextRank = nextCharCode <= 76 ? String.fromCharCode(nextCharCode) : "기타";
             draftBoard.grades.push({ id: makeGradeId(), rank: nextRank, name: "", image: "", chance: 0, maxCount: 0, soldCount: 0 });
             renderBoardEditForm();
@@ -2430,8 +2525,19 @@
             saveBoards(boards);
             const msg = document.getElementById("board-edit-msg");
             msg.style.color = "#2bb673";
-            msg.innerText = "성공적으로 저장되었습니다!";
+            msg.innerText = "성공적으로 저장되었습니다! 잠시 후 모든 이용자 화면에도 반영됩니다.";
         }
+
+        /* ===================== 초기 데이터 로드 ===================== */
+        (async function initApp() {
+            const submitBtn = document.getElementById("auth-submit-btn");
+            submitBtn.disabled = true;
+            showMsg("데이터를 불러오는 중입니다...", false);
+            await loadAllFromStorage();
+            dataReady = true;
+            submitBtn.disabled = false;
+            showMsg("");
+        })();
     </script>
 </body>
 </html>
